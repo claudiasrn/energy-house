@@ -1,0 +1,23 @@
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #0a0a0a;
+    color: #f5f0e8;
+    font-family: Georgia, serif;
+    padding: 60px;
+}
+
+h1 {
+    font-size: 80px;
+    color: #ffffff;
+}
+
+p{
+    font-size: 16px;
+    color: #888888;
+}
