@@ -6,8 +6,8 @@
 }
 
 body {
-    background-color: #0a0a0a;
-    color: #f5f0e8;
+    background-color: #f5f0e8;
+    color: #2c1a0e;
     font-family: Georgia, serif;
 }
 
@@ -21,14 +21,14 @@ nav {
     left: 0;
     right: 0;
     z-index: 100;
-    background: rgba(10,10,10,0.9);
-    border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+    background: rgba(245,240,232,0.95);
+    border-bottom: 1px solid rgba(139, 90, 43, 0.2);
 }
 
 .nav-logo {
     font-size: 1.2rem;
     letter-spacing: 0.3em;
-    color: #c9a84c;
+    color: #8b5a2b;
     font-weight: bold;
 }
 
@@ -46,8 +46,29 @@ nav {
     text-transform: uppercase;
 }   
 
-.nav-links li a:hover {
-    color: #c9a84c;
+.nav-links li a {
+    color: #2c1a0e;
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    position: relative;
+    padding-bottom: 4px;
+}
+
+.nav-links li a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0%;
+    height: 1px;
+    background-color: #8b5a2b;
+    transition: width 0.3s ease;
+}
+
+.nav-links li a:hover::after {
+    width: 100%;
 }
 
 /* Hero Section */
@@ -61,7 +82,7 @@ nav {
 
 .hero h1 {
     font-size: 120px;
-    color: #ffffff;
+    color: #2c1a0e;
     line-height: 1;
 }
 
