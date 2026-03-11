@@ -5,6 +5,10 @@
     box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
     background-color: #f5f0e8;
     color: #2c1a0e;
@@ -67,6 +71,41 @@ nav {
 
 .nav-links li a:hover::after {
     width: 100%;
+}
+
+/* Animations */
+.fade-in {
+  opacity: 0;
+  transform: translateY(60px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-title-img {
+  animation: heroLoad 1.2s ease forwards;
+}
+
+.hero-tag {
+  animation: heroLoad 1s ease forwards;
+}
+
+.hero-sub, .btn {
+  animation: heroLoad 1.4s ease forwards;
+}
+
+@keyframes heroLoad {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Hero Section */
