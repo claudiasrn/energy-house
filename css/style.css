@@ -116,11 +116,18 @@ nav {
 }
 
 .hero h1 {
-    font-size: 120px;
-    color: #2c1a0e;
-    line-height: 1;
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 300;
+  font-size: 120px;
+  color: #2c1a0e;
+  line-height: 1;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+}
+
+.hero-title-img {
+  width: 800px;
+  height: auto;
+  mix-blend-mode: multiply;
+  opacity: 0.75;
 }
 
 .hero p {
