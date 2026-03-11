@@ -39,4 +39,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+
+// Number counter
+const counters = document.querySelectorAll('.stat-num');
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const target = entry.target;
+      const text = target.innerText;
+      const final = parseInt(text);
+      const suffix = text.replace(/[0-9]/g, '');
+      let count = 0;
+      const duration = 2500;
+      const increment = final / (duration / 30);
+
+      const timer = setInterval(() => {
+        count += increment;
+        if (count >= final) {
+          count = final;
+          clearInterval(timer);
+        }
+        target.innerText = Math.floor(count) + suffix;
+      }, 30);
+
+      counterObserver.unobserve(target);
+    }
+  });
+}, { threshold: 0.5 });
+
+counters.forEach(counter => counterObserver.observe(counter));
 });
