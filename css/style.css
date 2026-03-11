@@ -163,14 +163,6 @@ nav {
   color: #8b5a2b;
 }
 
-.heading-logo {
-  height: 80px;
-  width: auto;
-  opacity: 0.85;
-  display: block;
-  margin: 0 auto 10px;
-}
-
 .dogs-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
