@@ -155,11 +155,20 @@ nav {
   font-weight: 300;
   color: #2c1a0e;
   margin-top: 12px;
+  margin-bottom: 16px;
 }
 
 .section-header h2 em {
   font-style: italic;
   color: #8b5a2b;
+}
+
+.heading-logo {
+  height: 80px;
+  width: auto;
+  opacity: 0.85;
+  display: block;
+  margin: 0 auto 10px;
 }
 
 .dogs-grid {
@@ -379,3 +388,27 @@ footer {
   color: rgba(245, 240, 232, 0.3);
   letter-spacing: 0.1em;
 }
+
+/* Responsive */
+.dogs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  margin-bottom: 60px;
+}
+
+@media (max-width: 900px) {
+  .about {
+    grid-template-columns: 1fr;
+  }
+
+  nav {
+    padding: 20px 30px;
+  }
+
+  .hero, .featured-dogs, .about, footer {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+}
+
