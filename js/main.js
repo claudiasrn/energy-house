@@ -1,4 +1,7 @@
+history.scrollRestoration = 'manual';
+
 document.addEventListener('DOMContentLoaded', () => {
+  window.scrollTo(0, 0);
 
   // Nav scroll effect
   window.addEventListener('scroll', () => {
@@ -14,15 +17,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Fade in on scroll
   const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    } else {
-      entry.target.classList.remove('visible');
-    }
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      } else {
+        entry.target.classList.remove('visible');
+      }
     });
-    }, { threshold: 0.1 });
+  }, { threshold: 0.1 });
 
   document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // Smooth scroll without changing URL
+  document.querySelectorAll('a[data-target]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.getElementById(link.dataset.target);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
 
 });
