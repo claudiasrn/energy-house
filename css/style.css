@@ -692,4 +692,36 @@ footer {
   color: rgba(44, 26, 14, 0.3);
 }
 
+/* Floating Labels */
+.form-group.floating {
+  position: relative;
+}
 
+.form-group.floating label {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.9rem;
+  color: rgba(44, 26, 14, 0.4);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  letter-spacing: 0.05em;
+  text-transform: none;
+}
+
+.form-group.floating input:focus ~ label,
+.form-group.floating input:not(:placeholder-shown) ~ label,
+.form-group.floating textarea:focus ~ label,
+.form-group.floating textarea:not(:placeholder-shown) ~ label,
+.form-group.floating select:focus ~ label,
+.form-group.floating select:valid ~ label {
+  top: -10px;
+  left: 12px;
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #8b5a2b;
+  background: #f5f0e8;
+  padding: 0 4px;
+}
