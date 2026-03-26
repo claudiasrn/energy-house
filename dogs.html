@@ -6,6 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Our Dogs — Energy House</title>
     <link rel="stylesheet" href="css/style.css" />
+    <style>
+      /* Make the whole card a link without breaking the layout */
+      a.dog-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: contents; /* lets the inner .dog-card-full keep its grid behaviour */
+      }
+ 
+      /* Arrow indicator on hover */
+      .dog-card-full .dog-info-full::after {
+        content: '→';
+        display: block;
+        font-size: 0.75rem;
+        color: #8b5a2b;
+        letter-spacing: 0.2em;
+        margin-top: 12px;
+        opacity: 0;
+        transform: translateX(-6px);
+        transition: opacity 0.3s, transform 0.3s;
+      }
+ 
+      .dog-card-full:hover .dog-info-full::after {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    </style>
   </head>
  
   <body>
@@ -40,69 +66,83 @@
     <section class="dogs-page-grid">
  
       <!-- MALES -->
-      <div class="dog-card-full fade-in" data-sex="male">
-        <div class="dog-photo-full">[ Photo ]</div>
-        <div class="dog-info-full">
-          <p class="dog-titles">Male</p>
-          <h3>Paint it Black of Energy House</h3>
-          <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+      <a class="dog-card-link" href="paint-it-black.html">
+        <div class="dog-card-full fade-in" data-sex="male">
+          <div class="dog-photo-full">[ Photo ]</div>
+          <div class="dog-info-full">
+            <p class="dog-titles">Male</p>
+            <h3>Paint it Black of Energy House</h3>
+            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+          </div>
         </div>
-      </div>
+      </a>
  
       <!-- FEMALES -->
-      <div class="dog-card-full fade-in" data-sex="female">
-        <div class="dog-photo-full">[ Photo ]</div>
-        <div class="dog-info-full">
-          <p class="dog-titles">Female</p>
-          <h3>Harley Quinn of Energy House</h3>
-          <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+      <a class="dog-card-link" href="harley-quinn.html">
+        <div class="dog-card-full fade-in" data-sex="female">
+          <div class="dog-photo-full">[ Photo ]</div>
+          <div class="dog-info-full">
+            <p class="dog-titles">Female</p>
+            <h3>Harley Quinn of Energy House</h3>
+            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+          </div>
         </div>
-      </div>
+      </a>
  
-      <div class="dog-card-full fade-in" data-sex="female">
-        <div class="dog-photo-full">[ Photo ]</div>
-        <div class="dog-info-full">
-          <p class="dog-titles">Female</p>
-          <h3>Instant Karma of Energy House</h3>
-          <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+      <a class="dog-card-link" href="instant-karma.html">
+        <div class="dog-card-full fade-in" data-sex="female">
+          <div class="dog-photo-full">[ Photo ]</div>
+          <div class="dog-info-full">
+            <p class="dog-titles">Female</p>
+            <h3>Instant Karma of Energy House</h3>
+            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+          </div>
         </div>
-      </div>
+      </a>
  
-      <div class="dog-card-full fade-in" data-sex="female">
-        <div class="dog-photo-full">[ Photo ]</div>
-        <div class="dog-info-full">
-          <p class="dog-titles">Female</p>
-          <h3>Pearl Jam of Energy House</h3>
-          <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+      <a class="dog-card-link" href="pearl-jam.html">
+        <div class="dog-card-full fade-in" data-sex="female">
+          <div class="dog-photo-full">[ Photo ]</div>
+          <div class="dog-info-full">
+            <p class="dog-titles">Female</p>
+            <h3>Pearl Jam of Energy House</h3>
+            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+          </div>
         </div>
-      </div>
+      </a>
  
-      <div class="dog-card-full fade-in" data-sex="female">
-        <div class="dog-photo-full">[ Photo ]</div>
-        <div class="dog-info-full">
-          <p class="dog-titles">Female</p>
-          <h3>Mustang Sally of Energy House</h3>
-          <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+      <a class="dog-card-link" href="mustang-sally.html">
+        <div class="dog-card-full fade-in" data-sex="female">
+          <div class="dog-photo-full">[ Photo ]</div>
+          <div class="dog-info-full">
+            <p class="dog-titles">Female</p>
+            <h3>Mustang Sally of Energy House</h3>
+            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+          </div>
         </div>
-      </div>
+      </a>
  
-      <div class="dog-card-full fade-in" data-sex="female">
-        <div class="dog-photo-full">[ Photo ]</div>
-        <div class="dog-info-full">
-          <p class="dog-titles">Female</p>
-          <h3>Waltzing Matilda of Energy House</h3>
-          <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+      <a class="dog-card-link" href="waltzing-matilda.html">
+        <div class="dog-card-full fade-in" data-sex="female">
+          <div class="dog-photo-full">[ Photo ]</div>
+          <div class="dog-info-full">
+            <p class="dog-titles">Female</p>
+            <h3>Waltzing Matilda of Energy House</h3>
+            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+          </div>
         </div>
-      </div>
+      </a>
  
-      <div class="dog-card-full fade-in" data-sex="female">
-        <div class="dog-photo-full">[ Photo ]</div>
-        <div class="dog-info-full">
-          <p class="dog-titles">Female</p>
-          <h3>Quiet Storm of Energy House</h3>
-          <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+      <a class="dog-card-link" href="quiet-storm.html">
+        <div class="dog-card-full fade-in" data-sex="female">
+          <div class="dog-photo-full">[ Photo ]</div>
+          <div class="dog-info-full">
+            <p class="dog-titles">Female</p>
+            <h3>Quiet Storm of Energy House</h3>
+            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+          </div>
         </div>
-      </div>
+      </a>
  
     </section>
  
