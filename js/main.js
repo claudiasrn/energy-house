@@ -69,3 +69,24 @@ const counterObserver = new IntersectionObserver((entries) => {
 
 counters.forEach(counter => counterObserver.observe(counter));
 });
+
+// Dog filter
+const filterBtns = document.querySelectorAll('.filter-btn');
+const dogCards = document.querySelectorAll('.dog-card-full');
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.filter;
+    dogCards.forEach(card => {
+      if (filter === 'all') {
+        card.classList.remove('hidden');
+      } else {
+        card.dataset.sex === filter
+          ? card.classList.remove('hidden')
+          : card.classList.add('hidden');
+      }
+    });
+  });
+});
