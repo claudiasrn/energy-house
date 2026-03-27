@@ -3,6 +3,22 @@ history.scrollRestoration = 'manual';
 document.addEventListener('DOMContentLoaded', () => {
   window.scrollTo(0, 0);
 
+  // Mobile navigation
+  const navToggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+
+  navToggle?.addEventListener('click', () => {
+    navToggle.classList.toggle('open');
+    navLinks.classList.toggle('open');
+  });
+
+  navLinks?.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      navToggle.classList.remove('open');
+      navLinks.classList.remove('open');
+    });
+  });
+
   // Nav scroll effect
   window.addEventListener('scroll', () => {
     const nav = document.querySelector('nav');
@@ -68,25 +84,4 @@ const counterObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.5 });
 
 counters.forEach(counter => counterObserver.observe(counter));
-});
-
-// Dog filter
-const filterBtns = document.querySelectorAll('.filter-btn');
-const dogCards = document.querySelectorAll('.dog-card-full');
-
-filterBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    filterBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const filter = btn.dataset.filter;
-    dogCards.forEach(card => {
-      if (filter === 'all') {
-        card.classList.remove('hidden');
-      } else {
-        card.dataset.sex === filter
-          ? card.classList.remove('hidden')
-          : card.classList.add('hidden');
-      }
-    });
-  });
 });
