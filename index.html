@@ -6,6 +6,31 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Energy House</title>
         <link rel="stylesheet" href="css/style.css" />
+        <style>
+            /* Makes featured dog cards clickable links */
+            a.dog-card-link {
+                text-decoration: none;
+                color: inherit;
+                display: contents;
+            }
+            /* Loading state while Firestore fetch is in flight */
+            .dogs-grid-loading {
+                grid-column: 1 / -1;
+                text-align: center;
+                font-family: 'Jost', sans-serif;
+                font-size: 0.7rem;
+                letter-spacing: 0.3em;
+                text-transform: uppercase;
+                color: #8b5a2b;
+                padding: 60px 0;
+            }
+            /* "of Energy House" suffix styled in italic brown */
+            .dog-info h3 em {
+                font-style: italic;
+                color: #8b5a2b;
+                font-size: inherit;
+            }
+        </style>
     </head>
 
     <body>
@@ -32,7 +57,7 @@
         </section>
 
         <!--Stats Bar-->
-        <div class="stats-bar fade-in", id="stats">
+        <div class="stats-bar fade-in" id="stats">
             <div class="stat">
                 <span class="stat-num">40+</span>
                 <span class="stat-label">Champions Produced</span>
@@ -52,39 +77,18 @@
         </div>
         
         <!-- Featured Dogs -->
+        <!-- dogs-grid starts empty — the script fetches dogs with
+             featured === true from Firestore and injects up to 3 cards -->
         <section class="featured-dogs fade-in" id="dogs">
             <div class="section-header fade-in">
                 <p class="section-label">Our Dogs</p>
                 <h2>Meet the <em>Energy House</em> Family</h2>
             </div>
-            <div class="dogs-grid">
-                <div class="dog-card fade-in" style="transition-delay: 0s;">
-                    <div class="dog-photo">[ Photo ]</div>
-                    <div class="dog-info">
-                        <p class="dog-titles">Multi BIS Winner</p>
-                        <h3>Dog Name</h3>
-                        <p class="dog-detail">Date of Birth · Color · Sex</p>
-                    </div>
-                </div>
-                <div class="dog-card fade-in" style="transition-delay: 0.2s;">
-                    <div class="dog-photo">[ Photo ]</div>
-                    <div class="dog-info">
-                        <p class="dog-titles">Grand Champion</p>
-                        <h3>Dog Name</h3>
-                        <p class="dog-detail">Date of Birth · Color · Sex</p>
-                    </div>
-                </div>
-                <div class="dog-card fade-in" style="transition-delay: 0.4s;">
-                    <div class="dog-photo">[ Photo ]</div>
-                    <div class="dog-info">
-                        <p class="dog-titles">Multi BIS Winner</p>
-                        <h3>Dog Name</h3>
-                        <p class="dog-detail">Date of Birth · Color · Sex</p>
-                    </div>
-                </div>
+            <div class="dogs-grid" id="featured-grid">
+                <p class="dogs-grid-loading">Loading...</p>
             </div>
             <div class="centered">
-                <a href="#" class="btn">View All Dogs</a>
+                <a href="dogs.html" class="btn">View All Dogs</a>
             </div>
         </section>
 
@@ -109,23 +113,131 @@
 
         <!--Footer-->
         <footer>
-        <div class="footer-logo">
-            <img src="images/logo-black.png" alt="Energy House" class="footer-icon" />
-            <img src="images/logo-text.png" alt="Energy House" class="footer-title-img" />
+            <div class="footer-logo">
+                <img src="images/logo-black.png" alt="Energy House" class="footer-icon" />
+                <img src="images/logo-text.png" alt="Energy House" class="footer-title-img" />
             </div>
-                <div class="footer-links">
-                <a href="#">Home</a>
-                <a href="#">About</a>
-                <a href="#">Our Dogs</a>
-                <a href="#">Champions</a>
-                <a href="#">Litters</a>
-                <a href="#">Contact</a>
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="dogs.html">Our Dogs</a>
+                <a href="champions.html">Champions</a>
+                <a href="litters.html">Litters</a>
+                <a href="contact.html">Contact</a>
             </div>
-                <div class="footer-social">
+            <div class="footer-social">
                 <a href="https://instagram.com/energyhouse26" target="_blank">Instagram</a>
                 <p>© 2025 Energy House. All rights reserved.</p>
             </div>
         </footer>
+
+        <script type="module">
+            const PROJECT = "energy-house-60783";
+            const BASE    = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
+
+            // Unwraps Firestore's typed field format into a plain JS object
+            function parseDoc(doc) {
+                const fields = doc.fields || {};
+                const out = {};
+                for (const [k, v] of Object.entries(fields)) {
+                    if      (v.stringValue  !== undefined) out[k] = v.stringValue;
+                    else if (v.integerValue !== undefined) out[k] = Number(v.integerValue);
+                    else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
+                    else out[k] = null;
+                }
+                return out;
+            }
+
+            // Splits "Paint it Black of Energy House" into
+            // { main: "Paint it Black", suffix: "of Energy House" }
+            function formatName(fullName) {
+                const suffix = " of Energy House";
+                if (fullName?.endsWith(suffix)) {
+                    return { main: fullName.slice(0, -suffix.length), suffix: "of Energy House" };
+                }
+                return { main: fullName || "—", suffix: "" };
+            }
+
+            // Builds one featured card. Uses the existing .dog-card and .dog-photo
+            // classes so the homepage CSS requires no changes.
+            // index is used to stagger the card fade-in animations (0s, 0.2s, 0.4s)
+            function buildCard(id, dog, index) {
+                const { main, suffix } = formatName(dog.name);
+                const delay = (index * 0.2) + "s";
+                const photoHtml = dog.photo
+                    ? `<img src="${dog.photo}" alt="${dog.name}" style="width:100%;height:100%;object-fit:cover;" />`
+                    : "";
+
+                return `
+                    <a class="dog-card-link" href="dog.html?id=${id}">
+                        <div class="dog-card fade-in" style="transition-delay: ${delay};">
+                            <div class="dog-photo">${photoHtml}</div>
+                            <div class="dog-info">
+                                <p class="dog-titles">${dog.titles || (dog.sex === "M" ? "Male" : "Female")}</p>
+                                <h3>${main}${suffix ? `<br/><em>${suffix}</em>` : ""}</h3>
+                                <p class="dog-detail">${[dog.dob, dog.color].filter(Boolean).join(" · ") || "—"}</p>
+                            </div>
+                        </div>
+                    </a>`;
+            }
+
+            // Fetches all dogs, keeps only featured === true, caps at 3,
+            // injects cards and re-runs the fade-in observer for them
+            async function loadFeatured() {
+                const grid = document.getElementById("featured-grid");
+
+                try {
+                    let documents = [];
+                    let pageToken = '';
+                    do {
+                        const url = `${BASE}/dogs?pageSize=300${pageToken ? '&pageToken=' + pageToken : ''}`;
+                        const res  = await fetch(url);
+                        const data = await res.json();
+                        if (data.documents) documents.push(...data.documents);
+                        pageToken = data.nextPageToken || '';
+                    } while (pageToken);
+
+                    if (!documents.length) {
+                        grid.innerHTML = "";
+                        return;
+                    }
+
+                    const allDogs = documents.map(doc => ({
+                        id: doc.name.split("/").at(-1),
+                        ...parseDoc(doc),
+                    }));
+
+                    // Keep only dogs Nina has marked as featured, max 3
+                    const featured = allDogs
+                        .filter(d => d.featured === true)
+                        .slice(0, 3);
+
+                    if (!featured.length) {
+                        // No featured dogs yet — clear the loading text silently
+                        grid.innerHTML = "";
+                        return;
+                    }
+
+                    grid.innerHTML = featured.map((d, i) => buildCard(d.id, d, i)).join("");
+
+                    // The main.js IntersectionObserver ran before these elements
+                    // existed, so we create a fresh one just for the new cards
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) entry.target.classList.add("visible");
+                        });
+                    }, { threshold: 0.1 });
+                    grid.querySelectorAll(".fade-in").forEach(el => observer.observe(el));
+
+                } catch (err) {
+                    // Fail silently on the homepage — no error message shown to visitors
+                    grid.innerHTML = "";
+                    console.error(err);
+                }
+            }
+
+            loadFeatured();
+        </script>
 
         <script src="js/main.js"></script>
     </body>

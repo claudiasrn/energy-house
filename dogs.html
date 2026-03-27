@@ -178,28 +178,29 @@
         try {
           // Fetching /dogs returns all documents in the collection.
           // The response shape is: { documents: [ ...array ] }
-          const res  = await fetch(`${BASE}/dogs`);
-          const data = await res.json();
+          let documents = [];
+          let pageToken = '';
+          do {
+              const url = `${BASE}/dogs?pageSize=300${pageToken ? '&pageToken=' + pageToken : ''}`;
+              const res  = await fetch(url);
+              const data = await res.json();
+              if (data.documents) documents.push(...data.documents);
+              pageToken = data.nextPageToken || '';
+          } while (pageToken);
 
-          if (!data.documents?.length) {
-            grid.innerHTML = `<p class="dogs-loading">No dogs found.</p>`;
-            return;
+          if (!documents.length) {
+              grid.innerHTML = `<p class="dogs-loading">No dogs found.</p>`;
+              return;
           }
 
-          // Parse every document and extract the ID from the full document
-          // path. The "name" field from Firestore looks like:
-          // "projects/energy-house-60783/.../documents/dogs/191"
-          // .at(-1) gives us just "191".
-          const allDogs = data.documents.map(doc => ({
+          const allDogs = documents.map(doc => ({
             id: doc.name.split("/").at(-1),
             ...parseDoc(doc),
           }));
 
           // Filter: only show dogs that belong to Energy House.
           // This excludes the 180+ ancestor dogs stored for pedigree purposes.
-          const ownDogs = allDogs.filter(d =>
-            d.name?.endsWith(" of Energy House")
-          );
+          const ownDogs = allDogs.filter(d => d.show === true);
 
           if (!ownDogs.length) {
             grid.innerHTML = `<p class="dogs-loading">No dogs found.</p>`;

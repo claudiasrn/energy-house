@@ -100,7 +100,46 @@
       .parent-dropdown-item .pid { font-size: 0.6rem; color: var(--brown); margin-left: 6px; }
       .parent-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--brown); line-height: 1; }
 
-      .form-divider { grid-column: 1 / -1; border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+      /* ── TOGGLE ROWS ──
+         Each toggle sits full-width in the form grid.
+         Label text on the left, pill switch + On/Off on the right. */
+      .toggle-row {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border: 1px solid var(--border);
+        background: white;
+      }
+      .toggle-row-label { display: flex; flex-direction: column; gap: 4px; }
+      .toggle-row-label strong { font-size: 0.78rem; font-weight: 400; color: var(--dark); }
+      .toggle-row-label span  { font-size: 0.62rem; color: var(--brown); letter-spacing: 0.05em; }
+      .toggle-switch { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+      .toggle-switch input[type="checkbox"] { display: none; }
+      /* The pill track */
+      .toggle-track {
+        width: 44px; height: 24px; border-radius: 12px;
+        background: rgba(139,90,43,0.1);
+        border: 1px solid var(--border);
+        position: relative;
+        transition: background 0.25s, border-color 0.25s;
+        flex-shrink: 0;
+      }
+      /* The sliding circle */
+      .toggle-track::after {
+        content: '';
+        position: absolute;
+        top: 3px; left: 3px;
+        width: 16px; height: 16px;
+        border-radius: 50%;
+        background: #bbb;
+        transition: transform 0.25s, background 0.25s;
+      }
+      .toggle-track.is-on { background: rgba(139,90,43,0.15); border-color: var(--brown); }
+      .toggle-track.is-on::after { transform: translateX(20px); background: var(--brown); }
+      .toggle-status { font-size: 0.7rem; color: #bbb; min-width: 24px; transition: color 0.25s; }
+      .toggle-status.is-on { color: var(--brown); }
 
       .form-actions { display: flex; gap: 14px; align-items: center; margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border); }
       .save-btn { padding: 12px 32px; background: var(--brown); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
@@ -175,8 +214,8 @@
       const db   = getFirestore(app);
 
       // ── State ────────────────────────────────────────────────────
-      let allDogs    = {}; // id(string) → dog data from Firestore
-      let currentId  = null;
+      let allDogs   = {};
+      let currentId = null;
 
       // ── Auth ─────────────────────────────────────────────────────
       onAuthStateChanged(auth, user => {
@@ -215,7 +254,7 @@
         document.getElementById('reset-msg').style.display = 'block';
       };
 
-      // ── Load all dogs from Firestore ──────────────────────────────
+      // ── Load all dogs ─────────────────────────────────────────────
       async function loadAllDogs() {
         const snap = await getDocs(collection(db, 'dogs'));
         allDogs = {};
@@ -223,38 +262,36 @@
         renderList();
       }
 
-      // ── Render sidebar list ───────────────────────────────────────
+      // ── Sidebar list ──────────────────────────────────────────────
       function renderList(filter = '') {
         const list = document.getElementById('dog-list');
-        const ids = Object.keys(allDogs).sort((a,b) => Number(a) - Number(b));
-        const q = filter.toLowerCase();
+        const ids  = Object.keys(allDogs).sort((a,b) => Number(a) - Number(b));
+        const q    = filter.toLowerCase();
+        const filtered = ids.filter(id => !q || allDogs[id].name?.toLowerCase().includes(q));
 
-        const filtered = ids.filter(id => {
-          const d = allDogs[id];
-          return !q || d.name?.toLowerCase().includes(q);
-        });
-
-        if (!filtered.length) {
-          list.innerHTML = '<div class="loading">No dogs found</div>';
-          return;
-        }
+        if (!filtered.length) { list.innerHTML = '<div class="loading">No dogs found</div>'; return; }
 
         list.innerHTML = filtered.map(id => {
           const d = allDogs[id];
           const hasDetails = d.dob || d.color || d.titles || d.photo;
+          // Show "Visible" and/or "Featured" tags in the sidebar meta line
+          // so Nina can see at a glance which dogs are public without opening each one
+          const tags = [
+            d.show     ? 'Visible'  : '',
+            d.featured ? 'Featured' : '',
+          ].filter(Boolean).join(' · ');
+
           return `<div class="dog-item${currentId===id?' active':''}" id="li-${id}" onclick="selectDog('${id}')">
             <div>
               <div class="dog-item-name">${d.name || `Dog #${id}`}</div>
-              <div class="dog-item-meta">#${id} · ${d.sex==='M'?'Male':'Female'}</div>
+              <div class="dog-item-meta">#${id} · ${d.sex==='M'?'Male':'Female'}${tags ? ' · ' + tags : ''}</div>
             </div>
             ${hasDetails ? '<div class="dog-item-dot"></div>' : ''}
           </div>`;
         }).join('');
       }
 
-      window.filterList = () => {
-        renderList(document.getElementById('search-input').value);
-      };
+      window.filterList = () => renderList(document.getElementById('search-input').value);
 
       // ── Select dog ────────────────────────────────────────────────
       window.selectDog = (id) => {
@@ -264,10 +301,46 @@
         renderEditPanel(id);
       };
 
-      // ── Render edit panel ─────────────────────────────────────────
+      // ── Toggle helper ─────────────────────────────────────────────
+      // Builds the HTML for one toggle row.
+      // inputId  — e.g. "e-show" or "e-featured"
+      // checked  — boolean, the current saved value
+      // label    — bold title line
+      // hint     — smaller description line
+      function makeToggle(inputId, checked, label, hint) {
+        const on = checked ? 'is-on' : '';
+        return `
+          <div class="toggle-row">
+            <div class="toggle-row-label">
+              <strong>${label}</strong>
+              <span>${hint}</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="${inputId}" ${checked ? 'checked' : ''}
+                onchange="handleToggleClick('${inputId}')" />
+              <div class="toggle-track ${on}" id="${inputId}-track"></div>
+              <span class="toggle-status ${on}" id="${inputId}-status">${checked ? 'On' : 'Off'}</span>
+            </label>
+          </div>`;
+      }
+
+      // Updates the visual pill when a toggle is clicked.
+      // The label's onclick fires before the checkbox flips, so we read
+      // the current state and invert it to get the future state.
+      window.handleToggleClick = (inputId) => {
+        const checkbox = document.getElementById(inputId);
+        const track    = document.getElementById(`${inputId}-track`);
+        const status   = document.getElementById(`${inputId}-status`);
+        // onchange fires after the checkbox has already updated,
+        // so checkbox.checked is already the new correct value
+        track.classList.toggle('is-on', checkbox.checked);
+        status.classList.toggle('is-on', checkbox.checked);
+        status.textContent = checkbox.checked ? 'On' : 'Off';
+      };
+
+      // ── Edit panel ────────────────────────────────────────────────
       function renderEditPanel(id) {
         const d = allDogs[id] || {};
-
         const sireName = d.sire ? (allDogs[String(d.sire)]?.name || `#${d.sire}`) : '';
         const damName  = d.dam  ? (allDogs[String(d.dam)]?.name  || `#${d.dam}`)  : '';
 
@@ -299,11 +372,8 @@
             <div class="form-field">
               <label>Sire (Father)</label>
               <div class="parent-search-wrap">
-                <input id="e-sire-search" type="text"
-                  value="${sireName}"
-                  placeholder="Search by name..."
-                  oninput="searchParent('sire', this.value)"
-                  autocomplete="off" />
+                <input id="e-sire-search" type="text" value="${sireName}"
+                  placeholder="Search by name..." oninput="searchParent('sire', this.value)" autocomplete="off" />
                 <button class="parent-clear" onclick="clearParent('sire')" title="Clear">×</button>
                 <div class="parent-dropdown" id="sire-dropdown"></div>
               </div>
@@ -312,11 +382,8 @@
             <div class="form-field">
               <label>Dam (Mother)</label>
               <div class="parent-search-wrap">
-                <input id="e-dam-search" type="text"
-                  value="${damName}"
-                  placeholder="Search by name..."
-                  oninput="searchParent('dam', this.value)"
-                  autocomplete="off" />
+                <input id="e-dam-search" type="text" value="${damName}"
+                  placeholder="Search by name..." oninput="searchParent('dam', this.value)" autocomplete="off" />
                 <button class="parent-clear" onclick="clearParent('dam')" title="Clear">×</button>
                 <div class="parent-dropdown" id="dam-dropdown"></div>
               </div>
@@ -344,6 +411,18 @@
             </div>
           </div>
 
+          <p class="section-label">Visibility</p>
+          <div class="form-grid">
+            ${makeToggle('e-show', !!d.show,
+              'Show on Dogs page',
+              'Appears in the public dogs grid and can be browsed by visitors'
+            )}
+            ${makeToggle('e-featured', !!d.featured,
+              'Feature on Homepage',
+              'Shown in the Featured Dogs section on the front page (max 3)'
+            )}
+          </div>
+
           <div class="form-actions">
             <button class="save-btn" id="save-btn" onclick="saveDog('${id}')">Save</button>
             <span class="save-ok" id="save-ok">Saved ✓</span>
@@ -352,18 +431,15 @@
         `;
       }
 
-      // ── Parent search dropdown ────────────────────────────────────
+      // ── Parent search ─────────────────────────────────────────────
       window.searchParent = (field, query) => {
         const dropdown = document.getElementById(`${field}-dropdown`);
         if (!query || query.length < 2) { dropdown.style.display = 'none'; return; }
-
         const q = query.toLowerCase();
         const matches = Object.entries(allDogs)
           .filter(([id, d]) => d.name?.toLowerCase().includes(q))
           .slice(0, 12);
-
         if (!matches.length) { dropdown.style.display = 'none'; return; }
-
         dropdown.innerHTML = matches.map(([id, d]) =>
           `<div class="parent-dropdown-item" onclick="selectParent('${field}', '${id}', '${d.name?.replace(/'/g,"\\'")}')">
             ${d.name} <span class="pid">#${id}</span>
@@ -384,14 +460,13 @@
         document.getElementById(`${field}-dropdown`).style.display = 'none';
       };
 
-      // Close dropdowns on outside click
       document.addEventListener('click', e => {
         if (!e.target.closest('.parent-search-wrap')) {
           document.querySelectorAll('.parent-dropdown').forEach(d => d.style.display = 'none');
         }
       });
 
-      // ── Save dog ──────────────────────────────────────────────────
+      // ── Save existing dog ─────────────────────────────────────────
       window.saveDog = async (id) => {
         const btn = document.getElementById('save-btn');
         btn.disabled = true; btn.textContent = 'Saving...';
@@ -400,15 +475,18 @@
         const damId  = document.getElementById('e-dam-id').value;
 
         const data = {
-          name:   document.getElementById('e-name').value.trim(),
-          sex:    document.getElementById('e-sex').value,
-          sire:   sireId ? Number(sireId) : null,
-          dam:    damId  ? Number(damId)  : null,
-          dob:    document.getElementById('e-dob').value.trim(),
-          color:  document.getElementById('e-color').value.trim(),
-          titles: document.getElementById('e-titles').value.trim(),
-          photo:  document.getElementById('e-photo').value.trim(),
-          reg:    document.getElementById('e-reg').value.trim(),
+          name:     document.getElementById('e-name').value.trim(),
+          sex:      document.getElementById('e-sex').value,
+          sire:     sireId ? Number(sireId) : null,
+          dam:      damId  ? Number(damId)  : null,
+          dob:      document.getElementById('e-dob').value.trim(),
+          color:    document.getElementById('e-color').value.trim(),
+          titles:   document.getElementById('e-titles').value.trim(),
+          photo:    document.getElementById('e-photo').value.trim(),
+          reg:      document.getElementById('e-reg').value.trim(),
+          // .checked reads the actual checkbox boolean — true means toggle is on
+          show:     document.getElementById('e-show').checked,
+          featured: document.getElementById('e-featured').checked,
         };
 
         await setDoc(doc(db, 'dogs', String(id)), data);
@@ -419,10 +497,8 @@
         ok.style.display = 'block';
         setTimeout(() => ok.style.display = 'none', 2500);
 
-        // Refresh name in sidebar
         renderList(document.getElementById('search-input').value);
         document.getElementById(`li-${id}`)?.classList.add('active');
-        // Update panel title
         document.querySelector('#edit-panel h2').textContent = data.name;
       };
 
@@ -469,7 +545,8 @@
             <div class="form-field">
               <label>Sire (Father)</label>
               <div class="parent-search-wrap">
-                <input id="e-sire-search" type="text" placeholder="Search by name..." oninput="searchParent('sire', this.value)" autocomplete="off" />
+                <input id="e-sire-search" type="text" placeholder="Search by name..."
+                  oninput="searchParent('sire', this.value)" autocomplete="off" />
                 <button class="parent-clear" onclick="clearParent('sire')">×</button>
                 <div class="parent-dropdown" id="sire-dropdown"></div>
               </div>
@@ -478,7 +555,8 @@
             <div class="form-field">
               <label>Dam (Mother)</label>
               <div class="parent-search-wrap">
-                <input id="e-dam-search" type="text" placeholder="Search by name..." oninput="searchParent('dam', this.value)" autocomplete="off" />
+                <input id="e-dam-search" type="text" placeholder="Search by name..."
+                  oninput="searchParent('dam', this.value)" autocomplete="off" />
                 <button class="parent-clear" onclick="clearParent('dam')">×</button>
                 <div class="parent-dropdown" id="dam-dropdown"></div>
               </div>
@@ -506,6 +584,18 @@
             </div>
           </div>
 
+          <p class="section-label">Visibility</p>
+          <div class="form-grid">
+            ${makeToggle('e-show', false,
+              'Show on Dogs page',
+              'Appears in the public dogs grid and can be browsed by visitors'
+            )}
+            ${makeToggle('e-featured', false,
+              'Feature on Homepage',
+              'Shown in the Featured Dogs section on the front page (max 3)'
+            )}
+          </div>
+
           <div class="form-actions">
             <button class="save-btn" onclick="saveNewDog()">Add Dog</button>
             <span class="save-ok" id="save-ok"></span>
@@ -513,6 +603,7 @@
         `;
       };
 
+      // ── Save new dog ──────────────────────────────────────────────
       window.saveNewDog = async () => {
         const name = document.getElementById('e-name').value.trim();
         if (!name) { alert('Please enter a name.'); return; }
@@ -525,14 +616,16 @@
 
         const data = {
           name,
-          sex:    document.getElementById('e-sex').value,
-          sire:   sireId ? Number(sireId) : null,
-          dam:    damId  ? Number(damId)  : null,
-          dob:    document.getElementById('e-dob').value.trim(),
-          color:  document.getElementById('e-color').value.trim(),
-          titles: document.getElementById('e-titles').value.trim(),
-          photo:  document.getElementById('e-photo').value.trim(),
-          reg:    document.getElementById('e-reg').value.trim(),
+          sex:      document.getElementById('e-sex').value,
+          sire:     sireId ? Number(sireId) : null,
+          dam:      damId  ? Number(damId)  : null,
+          dob:      document.getElementById('e-dob').value.trim(),
+          color:    document.getElementById('e-color').value.trim(),
+          titles:   document.getElementById('e-titles').value.trim(),
+          photo:    document.getElementById('e-photo').value.trim(),
+          reg:      document.getElementById('e-reg').value.trim(),
+          show:     document.getElementById('e-show').checked,
+          featured: document.getElementById('e-featured').checked,
         };
 
         await setDoc(doc(db, 'dogs', newId), data);
