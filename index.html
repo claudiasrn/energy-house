@@ -151,9 +151,11 @@
             // Splits "Paint it Black of Energy House" into
             // { main: "Paint it Black", suffix: "of Energy House" }
             function formatName(fullName) {
-                const suffix = " of Energy House";
-                if (fullName?.endsWith(suffix)) {
-                    return { main: fullName.slice(0, -suffix.length), suffix: "of Energy House" };
+                const suffixes = [" of Energy House", " for Energy House", " at Energy House"];
+                for (const suffix of suffixes) {
+                    if (fullName?.endsWith(suffix)) {
+                        return { main: fullName.slice(0, -suffix.length), suffix: suffix.trim() };
+                    }
                 }
                 return { main: fullName || "—", suffix: "" };
             }
