@@ -90,7 +90,7 @@
 
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-      import { getFirestore, doc, getDoc, collection, getDocs }
+      import { getFirestore, doc, getDoc }
         from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
       const firebaseConfig = {
@@ -176,14 +176,56 @@
         const { main, suffix } = formatName(dog.name);
         document.title = `${main} — Energy House`;
 
-        // Fetch all dogs for pedigree tree (needed for ancestor names)
-        const dogs = {};
+        // Fetch only the ancestor IDs needed for the 3-gen pedigree tree
+        const dogs = { [String(id)]: dog };
         try {
-          const allSnap = await getDocs(collection(db, 'dogs'));
-          allSnap.forEach(d => { dogs[d.id] = d.data(); });
+          // Collect all ancestor IDs up to 3 generations
+          const idsToFetch = new Set();
+          const addAncestors = (d, depth) => {
+            if (!d || depth === 0) return;
+            if (d.sire) idsToFetch.add(String(d.sire));
+            if (d.dam)  idsToFetch.add(String(d.dam));
+          };
+          addAncestors(dog, 3);
+
+          // Fetch gen 1
+          const gen1 = await Promise.all(
+            [...idsToFetch].map(aid => getDoc(doc(db, 'dogs', aid)))
+          );
+          gen1.forEach(s => { if (s.exists()) dogs[s.id] = s.data(); });
+
+          // Collect gen 2 IDs
+          const gen2ids = new Set();
+          gen1.forEach(s => {
+            if (!s.exists()) return;
+            const d = s.data();
+            if (d.sire) gen2ids.add(String(d.sire));
+            if (d.dam)  gen2ids.add(String(d.dam));
+          });
+
+          // Fetch gen 2
+          const gen2 = await Promise.all(
+            [...gen2ids].map(aid => getDoc(doc(db, 'dogs', aid)))
+          );
+          gen2.forEach(s => { if (s.exists()) dogs[s.id] = s.data(); });
+
+          // Collect gen 3 IDs
+          const gen3ids = new Set();
+          gen2.forEach(s => {
+            if (!s.exists()) return;
+            const d = s.data();
+            if (d.sire) gen3ids.add(String(d.sire));
+            if (d.dam)  gen3ids.add(String(d.dam));
+          });
+
+          // Fetch gen 3
+          const gen3 = await Promise.all(
+            [...gen3ids].map(aid => getDoc(doc(db, 'dogs', aid)))
+          );
+          gen3.forEach(s => { if (s.exists()) dogs[s.id] = s.data(); });
+
         } catch(e) {
-          console.warn('Could not load full pedigree:', e);
-          // Still render — pedigree boxes will just show —
+          console.warn('Could not load pedigree ancestors:', e);
         }
 
         const photoHtml = dog.photo
