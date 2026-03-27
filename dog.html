@@ -89,21 +89,9 @@
     </footer>
 
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-      import { getFirestore, doc, getDoc }
-        from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-
-      const firebaseConfig = {
-        apiKey:            "AIzaSyABuitLs7paqWiHRGfjaAqYP41sNBpH3wA",
-        authDomain:        "energy-house-60783.firebaseapp.com",
-        projectId:         "energy-house-60783",
-        storageBucket:     "energy-house-60783.firebasestorage.app",
-        messagingSenderId: "133999728706",
-        appId:             "1:133999728706:web:6fb756a536b2dc87d975db",
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const db  = getFirestore(app);
+      // Use Firestore REST API directly — avoids SDK streaming connection issues
+      const PROJECT = "energy-house-60783";
+      const BASE    = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
 
       // ── Helpers ──────────────────────────────────────────────────
       function formatName(fullName) {
@@ -156,77 +144,62 @@
         </div>`;
       }
 
+      // ── REST helpers ─────────────────────────────────────────────
+      function parseDoc(firestoreDoc) {
+        // Convert Firestore REST format to plain object
+        const fields = firestoreDoc.fields || {};
+        const out = {};
+        for (const [k, v] of Object.entries(fields)) {
+          if      (v.stringValue  !== undefined) out[k] = v.stringValue;
+          else if (v.integerValue !== undefined) out[k] = Number(v.integerValue);
+          else if (v.doubleValue  !== undefined) out[k] = v.doubleValue;
+          else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
+          else if (v.nullValue    !== undefined) out[k] = null;
+          else out[k] = null;
+        }
+        return out;
+      }
+
+      async function fetchDog(id) {
+        try {
+          const res = await fetch(`${BASE}/dogs/${id}`);
+          if (!res.ok) return null;
+          const data = await res.json();
+          return parseDoc(data);
+        } catch(e) { return null; }
+      }
+
       // ── Main ─────────────────────────────────────────────────────
       async function render() {
         const params  = new URLSearchParams(window.location.search);
         const id      = params.get('id');
         const content = document.getElementById('page-content');
 
-        if (!id) {
-          content.innerHTML = notFound(); return;
-        }
+        if (!id) { content.innerHTML = notFound(); return; }
 
-        // Fetch this dog
-        const snap = await getDoc(doc(db, 'dogs', String(id)));
-        if (!snap.exists()) {
-          content.innerHTML = notFound(); return;
-        }
+        const dog = await fetchDog(id);
+        if (!dog) { content.innerHTML = notFound(); return; }
 
-        const dog = snap.data();
         const { main, suffix } = formatName(dog.name);
         document.title = `${main} — Energy House`;
 
-        // Fetch only the ancestor IDs needed for the 3-gen pedigree tree
+        // Fetch ancestors generation by generation
         const dogs = { [String(id)]: dog };
-        try {
-          // Collect all ancestor IDs up to 3 generations
-          const idsToFetch = new Set();
-          const addAncestors = (d, depth) => {
-            if (!d || depth === 0) return;
-            if (d.sire) idsToFetch.add(String(d.sire));
-            if (d.dam)  idsToFetch.add(String(d.dam));
-          };
-          addAncestors(dog, 3);
 
-          // Fetch gen 1
-          const gen1 = await Promise.all(
-            [...idsToFetch].map(aid => getDoc(doc(db, 'dogs', aid)))
-          );
-          gen1.forEach(s => { if (s.exists()) dogs[s.id] = s.data(); });
+        // Gen 1
+        const g1ids = [dog.sire, dog.dam].filter(Boolean).map(String);
+        const g1 = await Promise.all(g1ids.map(fetchDog));
+        g1ids.forEach((aid, i) => { if (g1[i]) dogs[aid] = g1[i]; });
 
-          // Collect gen 2 IDs
-          const gen2ids = new Set();
-          gen1.forEach(s => {
-            if (!s.exists()) return;
-            const d = s.data();
-            if (d.sire) gen2ids.add(String(d.sire));
-            if (d.dam)  gen2ids.add(String(d.dam));
-          });
+        // Gen 2
+        const g2ids = [...new Set(g1.flatMap(d => d ? [d.sire, d.dam].filter(Boolean).map(String) : []))];
+        const g2 = await Promise.all(g2ids.map(fetchDog));
+        g2ids.forEach((aid, i) => { if (g2[i]) dogs[aid] = g2[i]; });
 
-          // Fetch gen 2
-          const gen2 = await Promise.all(
-            [...gen2ids].map(aid => getDoc(doc(db, 'dogs', aid)))
-          );
-          gen2.forEach(s => { if (s.exists()) dogs[s.id] = s.data(); });
-
-          // Collect gen 3 IDs
-          const gen3ids = new Set();
-          gen2.forEach(s => {
-            if (!s.exists()) return;
-            const d = s.data();
-            if (d.sire) gen3ids.add(String(d.sire));
-            if (d.dam)  gen3ids.add(String(d.dam));
-          });
-
-          // Fetch gen 3
-          const gen3 = await Promise.all(
-            [...gen3ids].map(aid => getDoc(doc(db, 'dogs', aid)))
-          );
-          gen3.forEach(s => { if (s.exists()) dogs[s.id] = s.data(); });
-
-        } catch(e) {
-          console.warn('Could not load pedigree ancestors:', e);
-        }
+        // Gen 3
+        const g3ids = [...new Set(g2.flatMap(d => d ? [d.sire, d.dam].filter(Boolean).map(String) : []))];
+        const g3 = await Promise.all(g3ids.map(fetchDog));
+        g3ids.forEach((aid, i) => { if (g3[i]) dogs[aid] = g3[i]; });
 
         const photoHtml = dog.photo
           ? `<img src="${dog.photo}" alt="${dog.name}" />`
