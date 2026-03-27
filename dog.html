@@ -178,7 +178,6 @@
         if (!id) { content.innerHTML = notFound(); return; }
 
         const dog = await fetchDog(id);
-        console.log('dog data:', JSON.stringify(dog));
         if (!dog) { content.innerHTML = notFound(); return; }
 
         const { main, suffix } = formatName(dog.name);
@@ -205,11 +204,11 @@
         const photoHtml = dog.photo
           ? `<img src="${dog.photo}" alt="${dog.name}" />`
           : '[ Photo ]';
-        console.log('about to render HTML');
+
         content.innerHTML = `
           <div class="dog-profile-hero">
             <div class="dog-profile-photo">${photoHtml}</div>
-            <div class="dog-profile-info fade-in">
+            <div class="dog-profile-info">
               <a href="dogs.html" class="back-link">Our Dogs</a>
               <p class="dog-profile-sex">${dog.sex === 'M' ? 'Male' : 'Female'}</p>
               <h1 class="dog-profile-name">
