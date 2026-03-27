@@ -27,6 +27,21 @@
         opacity: 1;
         transform: translateX(0);
       }
+      .dogs-loading {
+        grid-column: 1 / -1;
+        text-align: center;
+        font-family: 'Jost', sans-serif;
+        font-size: 0.7rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: #8b5a2b;
+        padding: 80px 0;
+      }
+      .dog-info-full h3 em {
+        font-style: italic;
+        color: #8b5a2b;
+        font-size: inherit;
+      }
     </style>
   </head>
   <body>
@@ -54,86 +69,9 @@
       <button class="filter-btn" data-filter="female">Females</button>
     </div>
 
-    <section class="dogs-page-grid">
-
-      <a class="dog-card-link" href="dog.html?id=191">
-        <div class="dog-card-full fade-in" data-sex="male">
-          <div class="dog-photo-full">[ Photo ]</div>
-          <div class="dog-info-full">
-            <p class="dog-titles">Male</p>
-            <h3>Paint it Black of Energy House</h3>
-            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
-          </div>
-        </div>
-      </a>
-
-      <a class="dog-card-link" href="dog.html?id=135">
-        <div class="dog-card-full fade-in" data-sex="female">
-          <div class="dog-photo-full">[ Photo ]</div>
-          <div class="dog-info-full">
-            <p class="dog-titles">Female</p>
-            <h3>Harley Quinn of Energy House</h3>
-            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
-          </div>
-        </div>
-      </a>
-
-      <a class="dog-card-link" href="dog.html?id=136">
-        <div class="dog-card-full fade-in" data-sex="female">
-          <div class="dog-photo-full">[ Photo ]</div>
-          <div class="dog-info-full">
-            <p class="dog-titles">Female</p>
-            <h3>Instant Karma of Energy House</h3>
-            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
-          </div>
-        </div>
-      </a>
-
-      <a class="dog-card-link" href="dog.html?id=139">
-        <div class="dog-card-full fade-in" data-sex="female">
-          <div class="dog-photo-full">[ Photo ]</div>
-          <div class="dog-info-full">
-            <p class="dog-titles">Female</p>
-            <h3>Mustang Sally of Energy House</h3>
-            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
-          </div>
-        </div>
-      </a>
-
-      <a class="dog-card-link" href="dog.html?id=137">
-        <div class="dog-card-full fade-in" data-sex="female">
-          <div class="dog-photo-full">[ Photo ]</div>
-          <div class="dog-info-full">
-            <p class="dog-titles">Female</p>
-            <h3>Waltzing Matilda of Energy House</h3>
-            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
-          </div>
-        </div>
-      </a>
-
-      <!-- Pearl Jam and Quiet Storm: add their IDs once Nina confirms them -->
-      <a class="dog-card-link" href="dog.html?id=0">
-        <div class="dog-card-full fade-in" data-sex="female">
-          <div class="dog-photo-full">[ Photo ]</div>
-          <div class="dog-info-full">
-            <p class="dog-titles">Female</p>
-            <h3>Pearl Jam of Energy House</h3>
-            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
-          </div>
-        </div>
-      </a>
-
-      <a class="dog-card-link" href="dog.html?id=0">
-        <div class="dog-card-full fade-in" data-sex="female">
-          <div class="dog-photo-full">[ Photo ]</div>
-          <div class="dog-info-full">
-            <p class="dog-titles">Female</p>
-            <h3>Quiet Storm of Energy House</h3>
-            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
-          </div>
-        </div>
-      </a>
-
+    <!-- Empty container — cards are injected by the script below -->
+    <section class="dogs-page-grid" id="dogs-grid">
+      <p class="dogs-loading">Loading...</p>
     </section>
 
     <footer>
@@ -154,6 +92,169 @@
         <p>© 2025 Energy House. All rights reserved.</p>
       </div>
     </footer>
+
+    <script type="module">
+      const PROJECT = "energy-house-60783";
+      const BASE    = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
+
+      // ------------------------------------------------------------------
+      // parseDoc
+      // Firestore REST API returns fields in a typed format like:
+      //   { name: { stringValue: "Rex" }, sire: { integerValue: "12" } }
+      // This function unwraps that into a plain JS object:
+      //   { name: "Rex", sire: 12 }
+      // ------------------------------------------------------------------
+      function parseDoc(doc) {
+        const fields = doc.fields || {};
+        const out = {};
+        for (const [k, v] of Object.entries(fields)) {
+          if      (v.stringValue  !== undefined) out[k] = v.stringValue;
+          else if (v.integerValue !== undefined) out[k] = Number(v.integerValue);
+          else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
+          else out[k] = null;
+        }
+        return out;
+      }
+
+      // ------------------------------------------------------------------
+      // formatName
+      // Splits "Paint it Black of Energy House" into two parts so we can
+      // style the suffix separately on the card:
+      //   { main: "Paint it Black", suffix: "of Energy House" }
+      // Dogs without the suffix are returned as-is.
+      // ------------------------------------------------------------------
+      function formatName(fullName) {
+        const suffix = " of Energy House";
+        if (fullName?.endsWith(suffix)) {
+          return { main: fullName.slice(0, -suffix.length), suffix: "of Energy House" };
+        }
+        return { main: fullName || "—", suffix: "" };
+      }
+
+      // ------------------------------------------------------------------
+      // buildCard
+      // Returns the HTML string for one dog card.
+      // id  — the Firestore document ID, e.g. "191"
+      // dog — plain object with fields: name, sex, dob, color, photo, etc.
+      // ------------------------------------------------------------------
+      function buildCard(id, dog) {
+        const { main, suffix } = formatName(dog.name);
+
+        // data-sex drives the filter buttons — must be "male" or "female"
+        const sex      = dog.sex === "M" ? "male" : "female";
+        const sexLabel = dog.sex === "M" ? "Male" : "Female";
+
+        // Combine DOB and color into one line; skip whichever is missing
+        const detail = [dog.dob, dog.color].filter(Boolean).join(" · ") || "—";
+
+        // Show the photo if one exists, otherwise leave the placeholder empty
+        const photoHtml = dog.photo
+          ? `<img src="${dog.photo}" alt="${dog.name}" style="width:100%;height:100%;object-fit:cover;" />`
+          : "";
+
+        return `
+          <a class="dog-card-link" href="dog.html?id=${id}">
+            <div class="dog-card-full fade-in" data-sex="${sex}">
+              <div class="dog-photo-full">${photoHtml}</div>
+              <div class="dog-info-full">
+                <p class="dog-titles">${sexLabel}</p>
+                <h3>${main}${suffix ? `<br/><em>${suffix}</em>` : ""}</h3>
+                <p class="dog-detail">${detail}</p>
+              </div>
+            </div>
+          </a>`;
+      }
+
+      // ------------------------------------------------------------------
+      // loadDogs
+      // Fetches the entire "dogs" collection from Firestore, filters to
+      // only Energy House dogs (those whose names end with "of Energy House"),
+      // sorts them (males first, then alphabetically), builds the cards,
+      // and wires up the filter buttons.
+      // ------------------------------------------------------------------
+      async function loadDogs() {
+        const grid = document.getElementById("dogs-grid");
+
+        try {
+          // Fetching /dogs returns all documents in the collection.
+          // The response shape is: { documents: [ ...array ] }
+          const res  = await fetch(`${BASE}/dogs`);
+          const data = await res.json();
+
+          if (!data.documents?.length) {
+            grid.innerHTML = `<p class="dogs-loading">No dogs found.</p>`;
+            return;
+          }
+
+          // Parse every document and extract the ID from the full document
+          // path. The "name" field from Firestore looks like:
+          // "projects/energy-house-60783/.../documents/dogs/191"
+          // .at(-1) gives us just "191".
+          const allDogs = data.documents.map(doc => ({
+            id: doc.name.split("/").at(-1),
+            ...parseDoc(doc),
+          }));
+
+          // Filter: only show dogs that belong to Energy House.
+          // This excludes the 180+ ancestor dogs stored for pedigree purposes.
+          const ownDogs = allDogs.filter(d =>
+            d.name?.endsWith(" of Energy House")
+          );
+
+          if (!ownDogs.length) {
+            grid.innerHTML = `<p class="dogs-loading">No dogs found.</p>`;
+            return;
+          }
+
+          // Sort: males first, then females; alphabetically within each group
+          ownDogs.sort((a, b) => {
+            if (a.sex !== b.sex) return a.sex === "M" ? -1 : 1;
+            return (a.name || "").localeCompare(b.name || "");
+          });
+
+          // Inject all cards into the grid
+          grid.innerHTML = ownDogs.map(d => buildCard(d.id, d)).join("");
+
+          // The IntersectionObserver in main.js only runs on page load, so
+          // it never sees these dynamically created elements. We set up a
+          // fresh observer here for the new cards.
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) entry.target.classList.add("visible");
+            });
+          }, { threshold: 0.1 });
+
+          grid.querySelectorAll(".fade-in").forEach(el => observer.observe(el));
+
+          // Wire up the filter buttons now — after the cards exist in the DOM.
+          // This fixes the race condition where main.js ran the filter code
+          // before these cards were created, finding nothing to filter.
+          const filterBtns = document.querySelectorAll(".filter-btn");
+          const dogCards   = grid.querySelectorAll(".dog-card-full");
+
+          filterBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+              filterBtns.forEach(b => b.classList.remove("active"));
+              btn.classList.add("active");
+
+              const filter = btn.dataset.filter;
+              dogCards.forEach(card => {
+                const show = filter === "all" || card.dataset.sex === filter;
+                // Hide/show the <a> wrapper, not just the inner div,
+                // so the grid layout collapses the space correctly.
+                card.closest(".dog-card-link").style.display = show ? "" : "none";
+              });
+            });
+          });
+
+        } catch (err) {
+          grid.innerHTML = `<p class="dogs-loading">Could not load dogs. Please try again later.</p>`;
+          console.error(err);
+        }
+      }
+
+      loadDogs();
+    </script>
 
     <script src="js/main.js"></script>
   </body>
