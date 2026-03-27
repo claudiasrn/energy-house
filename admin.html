@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin — Energy House</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root {
+        --brown:  #8b5a2b;
+        --dark:   #2c1a0e;
+        --cream:  #f5f0e8;
+        --white:  #ffffff;
+        --border: rgba(139,90,43,0.2);
+      }
+      body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--dark); min-height: 100vh; }
+
+      /* ── LOGIN ── */
+      #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 40px; }
+      .login-box { background: var(--white); border: 1px solid var(--border); padding: 60px 50px; width: 100%; max-width: 420px; text-align: center; }
+      .login-logo { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; margin-bottom: 6px; }
+      .login-sub  { font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--brown); margin-bottom: 48px; }
+      .login-box input { width: 100%; padding: 14px 16px; border: 1px solid var(--border); background: var(--cream); font-family: 'Jost', sans-serif; font-size: 0.85rem; color: var(--dark); margin-bottom: 12px; outline: none; transition: border-color 0.2s; }
+      .login-box input:focus { border-color: var(--brown); }
+      .login-btn { width: 100%; padding: 14px; background: var(--brown); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; margin-top: 4px; }
+      .login-btn:hover { background: var(--dark); }
+      .login-btn:disabled { background: #ccc; cursor: not-allowed; }
+      .login-error { color: #c0392b; font-size: 0.7rem; margin-top: 14px; min-height: 20px; }
+      .forgot-btn { display: block; margin-top: 16px; font-size: 0.65rem; letter-spacing: 0.15em; color: var(--brown); background: none; border: none; font-family: 'Jost', sans-serif; cursor: pointer; width: 100%; }
+      .forgot-btn:hover { text-decoration: underline; }
+      .reset-msg { font-size: 0.7rem; color: #27ae60; margin-top: 10px; display: none; }
+
+      /* ── ADMIN ── */
+      #admin-screen { display: none; }
+      .admin-header { background: var(--dark); color: white; padding: 18px 40px; display: flex; align-items: center; justify-content: space-between; }
+      .admin-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; }
+      .admin-user { font-size: 0.65rem; letter-spacing: 0.2em; color: rgba(255,255,255,0.4); margin-right: 16px; }
+      .logout-btn { background: none; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; font-family: 'Jost', sans-serif; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; }
+      .logout-btn:hover { background: rgba(255,255,255,0.1); }
+
+      .admin-body { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 61px); }
+
+      /* Sidebar */
+      .sidebar { border-right: 1px solid var(--border); display: flex; flex-direction: column; max-height: calc(100vh - 61px); }
+      .sidebar-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; position: sticky; top: 0; background: var(--cream); z-index: 1; }
+      .sidebar-search { flex: 1; padding: 8px 12px; border: 1px solid var(--border); background: white; font-family: 'Jost', sans-serif; font-size: 0.75rem; color: var(--dark); outline: none; }
+      .sidebar-search:focus { border-color: var(--brown); }
+      .add-btn { padding: 8px 14px; background: var(--brown); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em; cursor: pointer; white-space: nowrap; }
+      .add-btn:hover { background: var(--dark); }
+      .dog-list { overflow-y: auto; flex: 1; }
+      .dog-item { padding: 12px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: space-between; }
+      .dog-item:hover { background: white; }
+      .dog-item.active { background: white; border-left: 3px solid var(--brown); padding-left: 17px; }
+      .dog-item-name { font-size: 0.78rem; line-height: 1.3; }
+      .dog-item-meta { font-size: 0.58rem; letter-spacing: 0.15em; color: var(--brown); margin-top: 2px; }
+      .dog-item-dot  { width: 6px; height: 6px; border-radius: 50%; background: #27ae60; flex-shrink: 0; }
+
+      /* Edit panel */
+      .edit-panel { padding: 44px 56px; overflow-y: auto; max-height: calc(100vh - 61px); }
+      .edit-empty { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brown); }
+      .edit-panel h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 300; margin-bottom: 4px; }
+      .edit-meta { font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--brown); margin-bottom: 36px; }
+
+      .section-label { font-size: 0.6rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--brown); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }
+      .form-field { display: flex; flex-direction: column; gap: 7px; }
+      .form-field.full { grid-column: 1 / -1; }
+      .form-field label { font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--brown); }
+      .form-field input, .form-field select {
+        padding: 11px 13px;
+        border: 1px solid var(--border);
+        background: white;
+        font-family: 'Jost', sans-serif;
+        font-size: 0.82rem;
+        color: var(--dark);
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .form-field input:focus, .form-field select:focus { border-color: var(--brown); }
+
+      /* Parent search */
+      .parent-search-wrap { position: relative; }
+      .parent-search-wrap input { width: 100%; }
+      .parent-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0; right: 0;
+        background: white;
+        border: 1px solid var(--border);
+        border-top: none;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10;
+        display: none;
+      }
+      .parent-dropdown-item { padding: 9px 13px; font-size: 0.75rem; cursor: pointer; border-bottom: 1px solid var(--border); }
+      .parent-dropdown-item:hover { background: var(--cream); }
+      .parent-dropdown-item .pid { font-size: 0.6rem; color: var(--brown); margin-left: 6px; }
+      .parent-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--brown); line-height: 1; }
+
+      .form-divider { grid-column: 1 / -1; border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+
+      .form-actions { display: flex; gap: 14px; align-items: center; margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border); }
+      .save-btn { padding: 12px 32px; background: var(--brown); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+      .save-btn:hover { background: var(--dark); }
+      .save-btn:disabled { background: #ccc; cursor: not-allowed; }
+      .save-ok { font-size: 0.7rem; color: #27ae60; display: none; }
+      .delete-btn { margin-left: auto; padding: 12px 20px; background: none; color: #c0392b; border: 1px solid #c0392b; font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+      .delete-btn:hover { background: #c0392b; color: white; }
+
+      .loading { padding: 40px; text-align: center; font-size: 0.7rem; letter-spacing: 0.2em; color: var(--brown); text-transform: uppercase; }
+    </style>
+  </head>
+  <body>
+
+    <!-- LOGIN -->
+    <div id="login-screen">
+      <div class="login-box">
+        <p class="login-logo">Energy House</p>
+        <p class="login-sub">Admin Panel</p>
+        <input type="email"    id="l-email" placeholder="Email" autocomplete="email" />
+        <input type="password" id="l-pass"  placeholder="Password" autocomplete="current-password" />
+        <button class="login-btn" id="l-btn" onclick="signIn()">Sign In</button>
+        <p class="login-error" id="l-err"></p>
+        <button class="forgot-btn" onclick="resetPw()">Forgot password?</button>
+        <p class="reset-msg" id="reset-msg">Reset email sent ✓</p>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="admin-screen">
+      <div class="admin-header">
+        <h1>Energy House <em style="font-style:italic;color:rgba(255,255,255,0.35)">Admin</em></h1>
+        <div style="display:flex;align-items:center">
+          <span class="admin-user" id="a-user"></span>
+          <button class="logout-btn" onclick="doSignOut()">Sign out</button>
+        </div>
+      </div>
+      <div class="admin-body">
+        <div class="sidebar">
+          <div class="sidebar-header">
+            <input class="sidebar-search" id="search-input" placeholder="Search dogs..." oninput="filterList()" />
+            <button class="add-btn" onclick="showNewDog()">+ New</button>
+          </div>
+          <div class="dog-list" id="dog-list">
+            <div class="loading">Loading...</div>
+          </div>
+        </div>
+        <div class="edit-panel" id="edit-panel">
+          <div class="edit-empty">← Select a dog to edit</div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+      import { getAuth, signInWithEmailAndPassword, signOut as fbSignOut, sendPasswordResetEmail, onAuthStateChanged }
+        from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+      import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, writeBatch }
+        from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey:            "AIzaSyABuitLs7paqWiHRGfjaAqYP41sNBpH3wA",
+        authDomain:        "energy-house-60783.firebaseapp.com",
+        projectId:         "energy-house-60783",
+        storageBucket:     "energy-house-60783.firebasestorage.app",
+        messagingSenderId: "133999728706",
+        appId:             "1:133999728706:web:6fb756a536b2dc87d975db",
+      };
+
+      const app  = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db   = getFirestore(app);
+
+      // ── State ────────────────────────────────────────────────────
+      let allDogs    = {}; // id(string) → dog data from Firestore
+      let currentId  = null;
+
+      // ── Auth ─────────────────────────────────────────────────────
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          document.getElementById('login-screen').style.display = 'none';
+          document.getElementById('admin-screen').style.display = 'block';
+          document.getElementById('a-user').textContent = user.email;
+          loadAllDogs();
+        } else {
+          document.getElementById('login-screen').style.display = 'flex';
+          document.getElementById('admin-screen').style.display = 'none';
+        }
+      });
+
+      window.signIn = async () => {
+        const email = document.getElementById('l-email').value.trim();
+        const pass  = document.getElementById('l-pass').value;
+        const btn   = document.getElementById('l-btn');
+        const err   = document.getElementById('l-err');
+        err.textContent = ''; btn.disabled = true; btn.textContent = 'Signing in...';
+        try {
+          await signInWithEmailAndPassword(auth, email, pass);
+        } catch(e) {
+          err.textContent = 'Incorrect email or password.';
+          btn.disabled = false; btn.textContent = 'Sign In';
+        }
+      };
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('l-pass')?.addEventListener('keydown', e => { if(e.key==='Enter') window.signIn(); });
+      });
+      window.doSignOut = () => fbSignOut(auth);
+      window.resetPw = async () => {
+        const email = document.getElementById('l-email').value.trim();
+        if (!email) { document.getElementById('l-err').textContent = 'Enter your email first.'; return; }
+        await sendPasswordResetEmail(auth, email);
+        document.getElementById('reset-msg').style.display = 'block';
+      };
+
+      // ── Load all dogs from Firestore ──────────────────────────────
+      async function loadAllDogs() {
+        const snap = await getDocs(collection(db, 'dogs'));
+        allDogs = {};
+        snap.forEach(d => { allDogs[d.id] = d.data(); });
+        renderList();
+      }
+
+      // ── Render sidebar list ───────────────────────────────────────
+      function renderList(filter = '') {
+        const list = document.getElementById('dog-list');
+        const ids = Object.keys(allDogs).sort((a,b) => Number(a) - Number(b));
+        const q = filter.toLowerCase();
+
+        const filtered = ids.filter(id => {
+          const d = allDogs[id];
+          return !q || d.name?.toLowerCase().includes(q);
+        });
+
+        if (!filtered.length) {
+          list.innerHTML = '<div class="loading">No dogs found</div>';
+          return;
+        }
+
+        list.innerHTML = filtered.map(id => {
+          const d = allDogs[id];
+          const hasDetails = d.dob || d.color || d.titles || d.photo;
+          return `<div class="dog-item${currentId===id?' active':''}" id="li-${id}" onclick="selectDog('${id}')">
+            <div>
+              <div class="dog-item-name">${d.name || `Dog #${id}`}</div>
+              <div class="dog-item-meta">#${id} · ${d.sex==='M'?'Male':'Female'}</div>
+            </div>
+            ${hasDetails ? '<div class="dog-item-dot"></div>' : ''}
+          </div>`;
+        }).join('');
+      }
+
+      window.filterList = () => {
+        renderList(document.getElementById('search-input').value);
+      };
+
+      // ── Select dog ────────────────────────────────────────────────
+      window.selectDog = (id) => {
+        currentId = id;
+        document.querySelectorAll('.dog-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(`li-${id}`)?.classList.add('active');
+        renderEditPanel(id);
+      };
+
+      // ── Render edit panel ─────────────────────────────────────────
+      function renderEditPanel(id) {
+        const d = allDogs[id] || {};
+
+        const sireName = d.sire ? (allDogs[String(d.sire)]?.name || `#${d.sire}`) : '';
+        const damName  = d.dam  ? (allDogs[String(d.dam)]?.name  || `#${d.dam}`)  : '';
+
+        document.getElementById('edit-panel').innerHTML = `
+          <h2>${d.name || `Dog #${id}`}</h2>
+          <p class="edit-meta">ID #${id}</p>
+
+          <p class="section-label">Identity</p>
+          <div class="form-grid">
+            <div class="form-field full">
+              <label>Full Name</label>
+              <input id="e-name" type="text" value="${d.name || ''}" />
+            </div>
+            <div class="form-field">
+              <label>Sex</label>
+              <select id="e-sex">
+                <option value="M" ${d.sex==='M'?'selected':''}>Male</option>
+                <option value="F" ${d.sex==='F'?'selected':''}>Female</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Registration No.</label>
+              <input id="e-reg" type="text" value="${d.reg || ''}" placeholder="e.g. JR 12345/22" />
+            </div>
+          </div>
+
+          <p class="section-label">Pedigree</p>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Sire (Father)</label>
+              <div class="parent-search-wrap">
+                <input id="e-sire-search" type="text"
+                  value="${sireName}"
+                  placeholder="Search by name..."
+                  oninput="searchParent('sire', this.value)"
+                  autocomplete="off" />
+                <button class="parent-clear" onclick="clearParent('sire')" title="Clear">×</button>
+                <div class="parent-dropdown" id="sire-dropdown"></div>
+              </div>
+              <input type="hidden" id="e-sire-id" value="${d.sire || ''}" />
+            </div>
+            <div class="form-field">
+              <label>Dam (Mother)</label>
+              <div class="parent-search-wrap">
+                <input id="e-dam-search" type="text"
+                  value="${damName}"
+                  placeholder="Search by name..."
+                  oninput="searchParent('dam', this.value)"
+                  autocomplete="off" />
+                <button class="parent-clear" onclick="clearParent('dam')" title="Clear">×</button>
+                <div class="parent-dropdown" id="dam-dropdown"></div>
+              </div>
+              <input type="hidden" id="e-dam-id" value="${d.dam || ''}" />
+            </div>
+          </div>
+
+          <p class="section-label">Details</p>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Date of Birth</label>
+              <input id="e-dob"    type="text" value="${d.dob    || ''}" placeholder="e.g. 15.03.2022" />
+            </div>
+            <div class="form-field">
+              <label>Color</label>
+              <input id="e-color"  type="text" value="${d.color  || ''}" placeholder="e.g. Blue & White" />
+            </div>
+            <div class="form-field">
+              <label>Titles</label>
+              <input id="e-titles" type="text" value="${d.titles || ''}" placeholder="e.g. CH, JCH" />
+            </div>
+            <div class="form-field full">
+              <label>Photo URL</label>
+              <input id="e-photo"  type="text" value="${d.photo  || ''}" placeholder="e.g. images/paint-it-black.jpg" />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="save-btn" id="save-btn" onclick="saveDog('${id}')">Save</button>
+            <span class="save-ok" id="save-ok">Saved ✓</span>
+            <button class="delete-btn" onclick="deleteDog('${id}')">Delete Dog</button>
+          </div>
+        `;
+      }
+
+      // ── Parent search dropdown ────────────────────────────────────
+      window.searchParent = (field, query) => {
+        const dropdown = document.getElementById(`${field}-dropdown`);
+        if (!query || query.length < 2) { dropdown.style.display = 'none'; return; }
+
+        const q = query.toLowerCase();
+        const matches = Object.entries(allDogs)
+          .filter(([id, d]) => d.name?.toLowerCase().includes(q))
+          .slice(0, 12);
+
+        if (!matches.length) { dropdown.style.display = 'none'; return; }
+
+        dropdown.innerHTML = matches.map(([id, d]) =>
+          `<div class="parent-dropdown-item" onclick="selectParent('${field}', '${id}', '${d.name?.replace(/'/g,"\\'")}')">
+            ${d.name} <span class="pid">#${id}</span>
+          </div>`
+        ).join('');
+        dropdown.style.display = 'block';
+      };
+
+      window.selectParent = (field, id, name) => {
+        document.getElementById(`e-${field}-search`).value = name;
+        document.getElementById(`e-${field}-id`).value    = id;
+        document.getElementById(`${field}-dropdown`).style.display = 'none';
+      };
+
+      window.clearParent = (field) => {
+        document.getElementById(`e-${field}-search`).value = '';
+        document.getElementById(`e-${field}-id`).value    = '';
+        document.getElementById(`${field}-dropdown`).style.display = 'none';
+      };
+
+      // Close dropdowns on outside click
+      document.addEventListener('click', e => {
+        if (!e.target.closest('.parent-search-wrap')) {
+          document.querySelectorAll('.parent-dropdown').forEach(d => d.style.display = 'none');
+        }
+      });
+
+      // ── Save dog ──────────────────────────────────────────────────
+      window.saveDog = async (id) => {
+        const btn = document.getElementById('save-btn');
+        btn.disabled = true; btn.textContent = 'Saving...';
+
+        const sireId = document.getElementById('e-sire-id').value;
+        const damId  = document.getElementById('e-dam-id').value;
+
+        const data = {
+          name:   document.getElementById('e-name').value.trim(),
+          sex:    document.getElementById('e-sex').value,
+          sire:   sireId ? Number(sireId) : null,
+          dam:    damId  ? Number(damId)  : null,
+          dob:    document.getElementById('e-dob').value.trim(),
+          color:  document.getElementById('e-color').value.trim(),
+          titles: document.getElementById('e-titles').value.trim(),
+          photo:  document.getElementById('e-photo').value.trim(),
+          reg:    document.getElementById('e-reg').value.trim(),
+        };
+
+        await setDoc(doc(db, 'dogs', String(id)), data);
+        allDogs[id] = data;
+
+        btn.disabled = false; btn.textContent = 'Save';
+        const ok = document.getElementById('save-ok');
+        ok.style.display = 'block';
+        setTimeout(() => ok.style.display = 'none', 2500);
+
+        // Refresh name in sidebar
+        renderList(document.getElementById('search-input').value);
+        document.getElementById(`li-${id}`)?.classList.add('active');
+        // Update panel title
+        document.querySelector('#edit-panel h2').textContent = data.name;
+      };
+
+      // ── Delete dog ────────────────────────────────────────────────
+      window.deleteDog = async (id) => {
+        const name = allDogs[id]?.name || `Dog #${id}`;
+        if (!confirm(`Delete "${name}" from the database? This cannot be undone.`)) return;
+        await deleteDoc(doc(db, 'dogs', String(id)));
+        delete allDogs[id];
+        currentId = null;
+        document.getElementById('edit-panel').innerHTML = '<div class="edit-empty">Dog deleted</div>';
+        renderList(document.getElementById('search-input').value);
+      };
+
+      // ── New dog ───────────────────────────────────────────────────
+      window.showNewDog = () => {
+        currentId = null;
+        document.querySelectorAll('.dog-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('edit-panel').innerHTML = `
+          <h2>New Dog</h2>
+          <p class="edit-meta">Will be assigned a new ID automatically</p>
+
+          <p class="section-label">Identity</p>
+          <div class="form-grid">
+            <div class="form-field full">
+              <label>Full Name</label>
+              <input id="e-name" type="text" placeholder="e.g. Quiet Storm of Energy House" />
+            </div>
+            <div class="form-field">
+              <label>Sex</label>
+              <select id="e-sex">
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Registration No.</label>
+              <input id="e-reg" type="text" placeholder="e.g. JR 12345/23" />
+            </div>
+          </div>
+
+          <p class="section-label">Pedigree</p>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Sire (Father)</label>
+              <div class="parent-search-wrap">
+                <input id="e-sire-search" type="text" placeholder="Search by name..." oninput="searchParent('sire', this.value)" autocomplete="off" />
+                <button class="parent-clear" onclick="clearParent('sire')">×</button>
+                <div class="parent-dropdown" id="sire-dropdown"></div>
+              </div>
+              <input type="hidden" id="e-sire-id" value="" />
+            </div>
+            <div class="form-field">
+              <label>Dam (Mother)</label>
+              <div class="parent-search-wrap">
+                <input id="e-dam-search" type="text" placeholder="Search by name..." oninput="searchParent('dam', this.value)" autocomplete="off" />
+                <button class="parent-clear" onclick="clearParent('dam')">×</button>
+                <div class="parent-dropdown" id="dam-dropdown"></div>
+              </div>
+              <input type="hidden" id="e-dam-id" value="" />
+            </div>
+          </div>
+
+          <p class="section-label">Details</p>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Date of Birth</label>
+              <input id="e-dob" type="text" placeholder="e.g. 15.03.2023" />
+            </div>
+            <div class="form-field">
+              <label>Color</label>
+              <input id="e-color" type="text" placeholder="e.g. Fawn" />
+            </div>
+            <div class="form-field">
+              <label>Titles</label>
+              <input id="e-titles" type="text" placeholder="e.g. JCH" />
+            </div>
+            <div class="form-field full">
+              <label>Photo URL</label>
+              <input id="e-photo" type="text" placeholder="e.g. images/quiet-storm.jpg" />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="save-btn" onclick="saveNewDog()">Add Dog</button>
+            <span class="save-ok" id="save-ok"></span>
+          </div>
+        `;
+      };
+
+      window.saveNewDog = async () => {
+        const name = document.getElementById('e-name').value.trim();
+        if (!name) { alert('Please enter a name.'); return; }
+
+        const existingIds = Object.keys(allDogs).map(Number);
+        const newId = String(Math.max(...existingIds, 200) + 1);
+
+        const sireId = document.getElementById('e-sire-id').value;
+        const damId  = document.getElementById('e-dam-id').value;
+
+        const data = {
+          name,
+          sex:    document.getElementById('e-sex').value,
+          sire:   sireId ? Number(sireId) : null,
+          dam:    damId  ? Number(damId)  : null,
+          dob:    document.getElementById('e-dob').value.trim(),
+          color:  document.getElementById('e-color').value.trim(),
+          titles: document.getElementById('e-titles').value.trim(),
+          photo:  document.getElementById('e-photo').value.trim(),
+          reg:    document.getElementById('e-reg').value.trim(),
+        };
+
+        await setDoc(doc(db, 'dogs', newId), data);
+        allDogs[newId] = data;
+        renderList(document.getElementById('search-input').value);
+        selectDog(newId);
+      };
+
+    </script>
+  </body>
+</html>

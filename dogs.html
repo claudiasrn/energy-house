@@ -7,14 +7,11 @@
     <title>Our Dogs — Energy House</title>
     <link rel="stylesheet" href="css/style.css" />
     <style>
-      /* Make the whole card a link without breaking the layout */
       a.dog-card-link {
         text-decoration: none;
         color: inherit;
-        display: contents; /* lets the inner .dog-card-full keep its grid behaviour */
+        display: contents;
       }
- 
-      /* Arrow indicator on hover */
       .dog-card-full .dog-info-full::after {
         content: '→';
         display: block;
@@ -26,17 +23,14 @@
         transform: translateX(-6px);
         transition: opacity 0.3s, transform 0.3s;
       }
- 
       .dog-card-full:hover .dog-info-full::after {
         opacity: 1;
         transform: translateX(0);
       }
     </style>
   </head>
- 
   <body>
- 
-    <!-- Navigation -->
+
     <nav>
       <img src="images/logo-icon.png" class="nav-logo" alt="Energy House" />
       <ul class="nav-links">
@@ -48,25 +42,21 @@
         <li><a href="contact.html">Contact</a></li>
       </ul>
     </nav>
- 
-    <!-- Page Hero -->
+
     <section class="page-hero fade-in">
       <p class="hero-tag">Our Dogs</p>
       <h1>Meet the <em>Energy House</em> Family</h1>
     </section>
- 
-    <!-- Filter Bar -->
+
     <div class="filter-bar fade-in">
       <button class="filter-btn active" data-filter="all">All</button>
       <button class="filter-btn" data-filter="male">Males</button>
       <button class="filter-btn" data-filter="female">Females</button>
     </div>
- 
-    <!-- Dogs Grid -->
+
     <section class="dogs-page-grid">
- 
-      <!-- MALES -->
-      <a class="dog-card-link" href="paint-it-black.html">
+
+      <a class="dog-card-link" href="dog.html?id=191">
         <div class="dog-card-full fade-in" data-sex="male">
           <div class="dog-photo-full">[ Photo ]</div>
           <div class="dog-info-full">
@@ -76,9 +66,8 @@
           </div>
         </div>
       </a>
- 
-      <!-- FEMALES -->
-      <a class="dog-card-link" href="harley-quinn.html">
+
+      <a class="dog-card-link" href="dog.html?id=135">
         <div class="dog-card-full fade-in" data-sex="female">
           <div class="dog-photo-full">[ Photo ]</div>
           <div class="dog-info-full">
@@ -88,8 +77,8 @@
           </div>
         </div>
       </a>
- 
-      <a class="dog-card-link" href="instant-karma.html">
+
+      <a class="dog-card-link" href="dog.html?id=136">
         <div class="dog-card-full fade-in" data-sex="female">
           <div class="dog-photo-full">[ Photo ]</div>
           <div class="dog-info-full">
@@ -99,19 +88,8 @@
           </div>
         </div>
       </a>
- 
-      <a class="dog-card-link" href="pearl-jam.html">
-        <div class="dog-card-full fade-in" data-sex="female">
-          <div class="dog-photo-full">[ Photo ]</div>
-          <div class="dog-info-full">
-            <p class="dog-titles">Female</p>
-            <h3>Pearl Jam of Energy House</h3>
-            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
-          </div>
-        </div>
-      </a>
- 
-      <a class="dog-card-link" href="mustang-sally.html">
+
+      <a class="dog-card-link" href="dog.html?id=139">
         <div class="dog-card-full fade-in" data-sex="female">
           <div class="dog-photo-full">[ Photo ]</div>
           <div class="dog-info-full">
@@ -121,8 +99,8 @@
           </div>
         </div>
       </a>
- 
-      <a class="dog-card-link" href="waltzing-matilda.html">
+
+      <a class="dog-card-link" href="dog.html?id=137">
         <div class="dog-card-full fade-in" data-sex="female">
           <div class="dog-photo-full">[ Photo ]</div>
           <div class="dog-info-full">
@@ -132,8 +110,20 @@
           </div>
         </div>
       </a>
- 
-      <a class="dog-card-link" href="quiet-storm.html">
+
+      <!-- Pearl Jam and Quiet Storm: add their IDs once Nina confirms them -->
+      <a class="dog-card-link" href="dog.html?id=0">
+        <div class="dog-card-full fade-in" data-sex="female">
+          <div class="dog-photo-full">[ Photo ]</div>
+          <div class="dog-info-full">
+            <p class="dog-titles">Female</p>
+            <h3>Pearl Jam of Energy House</h3>
+            <p class="dog-detail">[ Date of Birth ] · [ Color ]</p>
+          </div>
+        </div>
+      </a>
+
+      <a class="dog-card-link" href="dog.html?id=0">
         <div class="dog-card-full fade-in" data-sex="female">
           <div class="dog-photo-full">[ Photo ]</div>
           <div class="dog-info-full">
@@ -143,10 +133,9 @@
           </div>
         </div>
       </a>
- 
+
     </section>
- 
-    <!-- Footer -->
+
     <footer>
       <div class="footer-logo">
         <img src="images/logo-icon.png" alt="Energy House" class="footer-icon" />
@@ -165,7 +154,7 @@
         <p>© 2025 Energy House. All rights reserved.</p>
       </div>
     </footer>
- 
+
     <script src="js/main.js"></script>
   </body>
 </html>
