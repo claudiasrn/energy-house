@@ -205,7 +205,7 @@
         const photoHtml = dog.photo
           ? `<img src="${dog.photo}" alt="${dog.name}" />`
           : '[ Photo ]';
-
+        console.log('about to render HTML');
         content.innerHTML = `
           <div class="dog-profile-hero">
             <div class="dog-profile-photo">${photoHtml}</div>
