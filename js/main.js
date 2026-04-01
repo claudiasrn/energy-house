@@ -19,6 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Active nav link
+const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+document.querySelectorAll('.nav-links li a').forEach(link => {
+    const linkPage = link.getAttribute('href').split('/').pop();
+    if (linkPage === currentPage) link.classList.add('active');
+});
+
   // Nav scroll effect
 window.addEventListener('scroll', () => {
     const nav = document.querySelector('nav');

@@ -83,6 +83,10 @@ nav {
     transition: width 0.3s ease;
 }
 
+.nav-links li a.active::after {
+    width: 100%;
+}
+
 .nav-links li a:hover::after {
     width: 100%;
 }
