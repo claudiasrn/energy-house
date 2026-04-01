@@ -176,38 +176,10 @@
         } catch(e) { return null; }
       }
 
-      // ── Main ─────────────────────────────────────────────────────
-      async function render() {
-        const params  = new URLSearchParams(window.location.search);
-        const id      = params.get('id');
-        const content = document.getElementById('page-content');
-
-        if (!id) { content.innerHTML = notFound(); return; }
-
-        const dog = await fetchDog(id);
-        if (!dog) { content.innerHTML = notFound(); return; }
-
+// ── Main ─────────────────────────────────────────────────────
+      function renderPage(dog, dogs) {
         const { main, suffix } = formatName(dog.name);
-        document.title = `${main} — Energy House`;
-
-        // Fetch ancestors generation by generation
-        const dogs = { [String(id)]: dog };
-
-        // Gen 1
-        const g1ids = [dog.sire, dog.dam].filter(Boolean).map(String);
-        const g1 = await Promise.all(g1ids.map(fetchDog));
-        g1ids.forEach((aid, i) => { if (g1[i]) dogs[aid] = g1[i]; });
-
-        // Gen 2
-        const g2ids = [...new Set(g1.flatMap(d => d ? [d.sire, d.dam].filter(Boolean).map(String) : []))];
-        const g2 = await Promise.all(g2ids.map(fetchDog));
-        g2ids.forEach((aid, i) => { if (g2[i]) dogs[aid] = g2[i]; });
-
-        // Gen 3
-        const g3ids = [...new Set(g2.flatMap(d => d ? [d.sire, d.dam].filter(Boolean).map(String) : []))];
-        const g3 = await Promise.all(g3ids.map(fetchDog));
-        g3ids.forEach((aid, i) => { if (g3[i]) dogs[aid] = g3[i]; });
-
+        const content = document.getElementById('page-content');
         const photoHtml = dog.photo
           ? `<img src="${dog.photo}" alt="${dog.name}" />`
           : '[ Photo ]';
@@ -236,6 +208,44 @@
               </a>
             </div>
           </div>`;
+      }
+
+      async function render() {
+        const params  = new URLSearchParams(window.location.search);
+        const id      = params.get('id');
+        const content = document.getElementById('page-content');
+
+        if (!id) { content.innerHTML = notFound(); return; }
+
+        const dog = await fetchDog(id);
+        if (!dog) { content.innerHTML = notFound(); return; }
+
+        document.title = `${formatName(dog.name).main} — Energy House`;
+
+        const dogs = { [String(id)]: dog };
+
+        // Gen 1 — wait for this before rendering so sire/dam show immediately
+        const g1ids = [dog.sire, dog.dam].filter(Boolean).map(String);
+        const g1    = await Promise.all(g1ids.map(fetchDog));
+        g1ids.forEach((aid, i) => { if (g1[i]) dogs[aid] = g1[i]; });
+
+        // Render now — dog info + gen 1 is ready
+        renderPage(dog, dogs);
+
+        // Gen 2 + 3 load in background, then patch just the pedigree tree
+        (async () => {
+          const g2ids = [...new Set(g1.flatMap(d => d ? [d.sire, d.dam].filter(Boolean).map(String) : []))];
+          const g2    = await Promise.all(g2ids.map(fetchDog));
+          g2ids.forEach((aid, i) => { if (g2[i]) dogs[aid] = g2[i]; });
+
+          const g3ids = [...new Set(g2.flatMap(d => d ? [d.sire, d.dam].filter(Boolean).map(String) : []))];
+          const g3    = await Promise.all(g3ids.map(fetchDog));
+          g3ids.forEach((aid, i) => { if (g3[i]) dogs[aid] = g3[i]; });
+
+          // Patch only the pedigree tree — no full page re-render
+          const treeEl = document.querySelector('.pedigree-tree');
+          if (treeEl) treeEl.outerHTML = buildTree(dog, dogs);
+        })();
       }
 
       function notFound() {

@@ -6,20 +6,11 @@
     --accent:   #8b5a2b;
     --dark:     #2c1a0e;
 
-    --body-text:   rgba(44, 26, 14, 0.75);
-    --subtle-text: rgba(44, 26, 14, 0.4);
+    --body-text:  #5a3e2b;
+    --subtle-text: #9e8070;
 
-    --accent-15:  rgba(139, 90, 43, 0.15);
-    --accent-20:  rgba(139, 90, 43, 0.2);
-    --accent-30:  rgba(139, 90, 43, 0.3);
-
-    --cream-30:  rgba(245, 240, 232, 0.3);
-    --cream-60:  rgba(245, 240, 232, 0.6);
-    --cream-95:  rgba(245, 240, 232, 0.95);
-    --cream-98:  rgba(245, 240, 232, 0.98);
-
-    --dark-10:  rgba(44, 26, 14, 0.1);
-    --dark-30:  rgba(44, 26, 14, 0.3);
+    --accent-15: rgba(139, 90, 43, 0.15);
+    --dark-30:   rgba(44, 26, 14, 0.3);
 }
 
 
@@ -56,8 +47,8 @@ nav {
     left: 0;
     right: 0;
     z-index: 200;
-    background: var(--cream-95);
-    border-bottom: 1px solid var(--accent-20);
+    background: var(--cream);
+    border-bottom: 1px solid var(--accent-15);
 }
 
 .nav-logo {
@@ -476,7 +467,7 @@ footer {
     font-size: 0.65rem;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: var(--cream-60);
+    color: var(--subtle-text);
     text-decoration: none;
     transition: color 0.3s;
 }
@@ -508,7 +499,7 @@ footer {
 
 .footer-social p {
     font-size: 0.6rem;
-    color: var(--cream-30);
+    color: var(--subtle-text);
     letter-spacing: 0.1em;
 }
 
@@ -788,7 +779,7 @@ footer {
         left: 0;
         right: 0;
         bottom: 0;
-        background: var(--cream-98);
+        background: var(--cream);
         flex-direction: column;
         align-items: center;
         justify-content: center;
@@ -833,7 +824,7 @@ footer {
   text-transform: uppercase;
   color: var(--accent);
   background: transparent;
-  border: 1px solid var(--accent-30);
+  border: 1px solid var(--accent-15);
   padding: 10px 24px;
   cursor: pointer;
   transition: all 0.3s;
