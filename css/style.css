@@ -117,7 +117,7 @@ nav {
 }
 
 .hero-title-img {
-    width: 800px;
+    width: min(800px, 85vw);
     height: auto;
     mix-blend-mode: multiply;
     opacity: 0;
