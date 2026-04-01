@@ -60,7 +60,7 @@
         </div>
       </div>
  
-      <form class="contact-form fade-in" action="https://formspree.io/f/xwvrnqry" method="POST" style="transition-delay: 0.2s;">
+      <form class="contact-form fade-in" id="contact-form" style="transition-delay: 0.2s;">
         <div class="form-group floating">
           <input type="text" id="name" name="name" placeholder=" " />
           <label for="name">Full Name</label>
@@ -85,6 +85,7 @@
         </div>
         <button type="submit" class="btn fade-in">Send Message</button>
       </form>
+      <div id="form-message" style="display:none; margin-top: 24px; font-family: 'Jost', sans-serif; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;"></div>
     </section>
  
     <!-- Footer -->
@@ -108,5 +109,41 @@
     </footer>
  
     <script src="js/main.js"></script>
+    <script>
+    document.getElementById('contact-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const btn  = form.querySelector('button[type="submit"]');
+        const msg  = document.getElementById('form-message');
+
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+
+        try {
+            const res = await fetch('https://formspree.io/f/xwvrnqry', {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' },
+                body: new FormData(form),
+            });
+
+            if (res.ok) {
+                form.reset();
+                msg.style.display = 'block';
+                msg.style.color = 'var(--accent)';
+                msg.textContent = 'Message sent — we\'ll be in touch soon.';
+                btn.disabled = false;
+                btn.textContent = 'Send Message';
+            } else {
+                throw new Error();
+            }
+        } catch {
+            msg.style.display = 'block';
+            msg.style.color = '#c0392b';
+            msg.textContent = 'Something went wrong — please try again or email us directly.';
+            btn.disabled = false;
+            btn.textContent = 'Send Message';
+        }
+    });
+</script>
   </body>
 </html>
