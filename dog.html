@@ -3,7 +3,11 @@
   <head>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet" />
     <meta charset="UTF-8" />
+    <meta name="description" content="French Bulldog profile — Energy House kennel, Sremska Mitrovica, Serbia." />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta property="og:title" content="Energy House — French Bulldog Kennel" />
+<meta property="og:description" content="French Bulldog profile — Energy House kennel, Sremska Mitrovica, Serbia." />
+<meta property="og:type" content="website" />
     <title>Our Dogs — Energy House</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
@@ -176,7 +180,12 @@
         const dog = await fetchDog(id);
         if (!dog) { content.innerHTML = notFound(); return; }
 
-        document.title = `${formatName(dog.name).main} — Energy House`;
+        const { main, suffix } = formatName(dog.name);
+document.title = `${main} — Energy House`;
+
+// Open Graph
+document.querySelector('meta[property="og:title"]').setAttribute('content', `${main} — Energy House`);
+document.querySelector('meta[property="og:description"]').setAttribute('content', `${dog.sex === 'M' ? 'Male' : 'Female'} French Bulldog${dog.titles ? ', ' + dog.titles : ''}. Energy House kennel, Sremska Mitrovica, Serbia.`);
 
         const dogs = { [String(id)]: dog };
 
