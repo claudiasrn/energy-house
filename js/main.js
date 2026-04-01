@@ -20,16 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Nav scroll effect
-  window.addEventListener('scroll', () => {
+window.addEventListener('scroll', () => {
     const nav = document.querySelector('nav');
-    if (window.scrollY > 50) {
-      nav.style.boxShadow = '0 2px 30px rgba(44, 26, 14, 0.1)';
-      nav.style.background = 'rgba(245, 240, 232, 1)';
-    } else {
-      nav.style.boxShadow = 'none';
-      nav.style.background = 'rgba(245, 240, 232, 0.95)';
-    }
-  });
+    nav.classList.toggle('scrolled', window.scrollY > 50);
+});
 
   // Fade in on scroll
   const observer = new IntersectionObserver((entries) => {

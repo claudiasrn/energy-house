@@ -87,6 +87,11 @@ nav {
     width: 100%;
 }
 
+nav.scrolled {
+    box-shadow: 0 2px 30px rgba(44, 26, 14, 0.1);
+    background: var(--cream);
+}
+
 /*
    ANIMATIONS
 */
@@ -408,7 +413,7 @@ button.btn {
     font-size: 0.7rem;
     letter-spacing: 0.4em;
     text-transform: uppercase;
-    color:  ;
+    color: var(--accent);
 }
 
 .instagram-handle {
