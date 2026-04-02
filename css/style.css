@@ -885,6 +885,32 @@ footer {
   display: none;
 }
 
+/* Featured dog card link wrapper */
+a.dog-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: contents;
+}
+
+/* Loading state while Firestore fetch is in flight (homepage grid) */
+.dogs-grid-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 60px 0;
+}
+
+/* "of Energy House" suffix on homepage featured cards */
+.dog-info h3 em {
+    font-style: italic;
+    color: var(--accent);
+    font-size: inherit;
+}
+
 /* Dogs grid loading state */
 .dogs-loading {
   grid-column: 1 / -1;
