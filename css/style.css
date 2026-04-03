@@ -848,7 +848,9 @@ footer {
 
 .dogs-page-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  max-width: 1200px;
+  margin: 0 auto;
   gap: 40px;
   padding: 80px 60px;
 }
