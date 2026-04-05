@@ -2,6 +2,7 @@ history.scrollRestoration = 'manual';
 
 document.addEventListener('DOMContentLoaded', () => {
   window.scrollTo(0, 0);
+  document.documentElement.style.scrollPaddingTop = '120px';
 
   // Mobile navigation
   const navToggle = document.querySelector('.nav-toggle');
