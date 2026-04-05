@@ -170,6 +170,7 @@
                 ${metaItem('Titles',        dog.titles)}
                 ${metaItem('Registration',  dog.reg)}
               </div>
+              ${dog.bio ? `<p class="dog-bio">${dog.bio}</p>` : ''}
               <div class="pedigree-section">
                 <p class="pedigree-heading">Pedigree</p>
                 ${buildTree(dog, dogs)}

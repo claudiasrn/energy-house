@@ -461,6 +461,10 @@
               <label>Photo URL</label>
               <input id="e-photo"  type="text" value="${d.photo  || ''}" placeholder="e.g. images/paint-it-black.jpg" />
             </div>
+            <div class="form-field full">
+              <label>Bio</label>
+              <textarea id="e-bio" rows="4" style="padding:11px 13px;border:1px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:0.82rem;color:var(--dark);outline:none;width:100%;resize:vertical;">${d.bio || ''}</textarea>
+            </div>
           </div>
 
           <p class="section-label">Visibility</p>
@@ -535,6 +539,7 @@
           color:    document.getElementById('e-color').value.trim(),
           titles:   document.getElementById('e-titles').value.trim(),
           photo:    document.getElementById('e-photo').value.trim(),
+          bio: document.getElementById('e-bio').value.trim(),
           reg:      document.getElementById('e-reg').value.trim(),
           // .checked reads the actual checkbox boolean — true means toggle is on
           show:     document.getElementById('e-show').checked,
@@ -634,6 +639,10 @@
               <label>Photo URL</label>
               <input id="e-photo" type="text" placeholder="e.g. images/quiet-storm.jpg" />
             </div>
+            <div class="form-field full">
+              <label>Bio</label>
+              <textarea id="e-bio" rows="4" style="padding:11px 13px;border:1px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:0.82rem;color:var(--dark);outline:none;width:100%;resize:vertical;"></textarea>
+            </div>
           </div>
 
           <p class="section-label">Visibility</p>
@@ -675,6 +684,7 @@
           color:    document.getElementById('e-color').value.trim(),
           titles:   document.getElementById('e-titles').value.trim(),
           photo:    document.getElementById('e-photo').value.trim(),
+          bio: document.getElementById('e-bio').value.trim(),
           reg:      document.getElementById('e-reg').value.trim(),
           show:     document.getElementById('e-show').checked,
           featured: document.getElementById('e-featured').checked,
