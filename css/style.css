@@ -734,6 +734,23 @@ footer {
     padding: 0 4px;
 }
 
+/* Select label — always raised above the field */
+.form-group.floating select ~ label {
+    top: -10px;
+    left: 12px;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--subtle-text);
+    background: var(--cream);
+    padding: 0 4px;
+}
+
+/* Select label turns accent when user picks a value */
+.form-group.floating select.has-value ~ label {
+    color: var(--accent);
+}
+
 /*
    RESPONSIVE
 */
