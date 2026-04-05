@@ -187,6 +187,7 @@ document.title = `${main} — Energy House`;
 // Open Graph
 document.querySelector('meta[property="og:title"]').setAttribute('content', `${main} — Energy House`);
 document.querySelector('meta[property="og:description"]').setAttribute('content', `${dog.sex === 'M' ? 'Male' : 'Female'} French Bulldog${dog.titles ? ', ' + dog.titles : ''}. Energy House kennel, Sremska Mitrovica, Serbia.`);
+document.querySelector('link[rel="canonical"]').setAttribute('href', `https://energyhouse.rs/dog.html?id=${id}`);
 
         const dogs = { [String(id)]: dog };
 
