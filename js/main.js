@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   navLinks?.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
-      navToggle.classList.remove('open');
+      navToggle?.classList.remove('open');
       navLinks.classList.remove('open');
     });
   });
