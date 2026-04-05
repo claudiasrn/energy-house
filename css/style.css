@@ -1051,6 +1051,19 @@ a.dog-card-link {
 .ped-box.unknown { border-left: 3px solid #ccc; opacity: 0.5; }
 .ped-box-name { color: var(--dark); font-weight: 300; line-height: 1.35; }
 .ped-box-role { font-size: 0.55rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent); margin-top: 3px; }
+.ped-box-link {
+  display: contents;
+  text-decoration: none;
+}
+
+.ped-box-link .ped-box {
+  cursor: pointer;
+}
+
+.ped-box-link .ped-box:hover {
+  background: var(--warm);
+  border-color: var(--accent);
+}
 .ped-g1-sire { grid-column: 1; grid-row: 1 / 5; }
 .ped-g1-dam  { grid-column: 1; grid-row: 5 / 9; }
 .ped-g2-ss   { grid-column: 2; grid-row: 1 / 3; }

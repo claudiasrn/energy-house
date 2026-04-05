@@ -8,6 +8,8 @@
     <meta property="og:title" content="Energy House — French Bulldog Kennel" />
     <meta property="og:description" content="French Bulldog profile — Energy House kennel, Sremska Mitrovica, Serbia." />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://energyhouse.rs/dog.html" />
+    <link rel="canonical" href="https://energyhouse.rs/dog.html" />   
     <title>Dog Profile — Energy House</title>
     <link rel="stylesheet" href="css/style.css" />
     <link rel="icon" href="images/logo-icon.png" type="image/png" />
@@ -77,38 +79,48 @@
         </div>`;
       }
 
-      function pedBox(dog, cssClass, role) {
+      function pedBox(dog, dogId, cssClass, role) {
         const name = dog?.name || '—';
         const side = dog ? (dog.sex === 'M' ? 'sire' : 'dam') : 'unknown';
-        return `<div class="ped-box ${cssClass} ${side}">
+        const box  = `<div class="ped-box ${cssClass} ${side}">
           <span class="ped-box-name">${name}</span>
           <span class="ped-box-role">${role}</span>
         </div>`;
-      }
+        return dog?.show && dogId
+          ? `<a href="dog.html?id=${dogId}" class="ped-box-link">${box}</a>`
+          : box;
+    }
 
-      function buildTree(dog, dogs) {
-        const sire  = dog.sire  ? dogs[String(dog.sire)]  : null;
-        const dam   = dog.dam   ? dogs[String(dog.dam)]   : null;
-        const g2ss  = sire?.sire ? dogs[String(sire.sire)] : null;
-        const g2sd  = sire?.dam  ? dogs[String(sire.dam)]  : null;
-        const g2ds  = dam?.sire  ? dogs[String(dam.sire)]  : null;
-        const g2dd  = dam?.dam   ? dogs[String(dam.dam)]   : null;
+      function buildTree(dog, dogs, dogIds) {
+        const sireId = dog.sire  ? String(dog.sire)  : null;
+        const damId  = dog.dam   ? String(dog.dam)   : null;
+        const sire   = sireId ? dogs[sireId] : null;
+        const dam    = damId  ? dogs[damId]  : null;
+
+        const g2ssId = sire?.sire ? String(sire.sire) : null;
+        const g2sdId = sire?.dam  ? String(sire.dam)  : null;
+        const g2dsId = dam?.sire  ? String(dam.sire)  : null;
+        const g2ddId = dam?.dam   ? String(dam.dam)   : null;
+        const g2ss   = g2ssId ? dogs[g2ssId] : null;
+        const g2sd   = g2sdId ? dogs[g2sdId] : null;
+        const g2ds   = g2dsId ? dogs[g2dsId] : null;
+        const g2dd   = g2ddId ? dogs[g2ddId] : null;
 
         return `<div class="pedigree-tree">
-          ${pedBox(sire,                  'ped-g1-sire', 'Sire')}
-          ${pedBox(dam,                   'ped-g1-dam',  'Dam')}
-          ${pedBox(g2ss,                  'ped-g2-ss',   'Paternal Grandsire')}
-          ${pedBox(g2sd,                  'ped-g2-sd',   'Paternal Granddam')}
-          ${pedBox(g2ds,                  'ped-g2-ds',   'Maternal Grandsire')}
-          ${pedBox(g2dd,                  'ped-g2-dd',   'Maternal Granddam')}
-          ${pedBox(g2ss?.sire ? dogs[String(g2ss.sire)] : null, 'ped-g3-sss', 'GG-Grandsire')}
-          ${pedBox(g2ss?.dam  ? dogs[String(g2ss.dam)]  : null, 'ped-g3-ssd', 'GG-Granddam')}
-          ${pedBox(g2sd?.sire ? dogs[String(g2sd.sire)] : null, 'ped-g3-sds', 'GG-Grandsire')}
-          ${pedBox(g2sd?.dam  ? dogs[String(g2sd.dam)]  : null, 'ped-g3-sdd', 'GG-Granddam')}
-          ${pedBox(g2ds?.sire ? dogs[String(g2ds.sire)] : null, 'ped-g3-dss', 'GG-Grandsire')}
-          ${pedBox(g2ds?.dam  ? dogs[String(g2ds.dam)]  : null, 'ped-g3-dsd', 'GG-Granddam')}
-          ${pedBox(g2dd?.sire ? dogs[String(g2dd.sire)] : null, 'ped-g3-dds', 'GG-Grandsire')}
-          ${pedBox(g2dd?.dam  ? dogs[String(g2dd.dam)]  : null, 'ped-g3-ddd', 'GG-Granddam')}
+          ${pedBox(sire,  sireId,  'ped-g1-sire', 'Sire')}
+          ${pedBox(dam,   damId,   'ped-g1-dam',  'Dam')}
+          ${pedBox(g2ss,  g2ssId,  'ped-g2-ss',   'Paternal Grandsire')}
+          ${pedBox(g2sd,  g2sdId,  'ped-g2-sd',   'Paternal Granddam')}
+          ${pedBox(g2ds,  g2dsId,  'ped-g2-ds',   'Maternal Grandsire')}
+          ${pedBox(g2dd,  g2ddId,  'ped-g2-dd',   'Maternal Granddam')}
+          ${pedBox(g2ss?.sire ? dogs[String(g2ss.sire)] : null, g2ss?.sire ? String(g2ss.sire) : null, 'ped-g3-sss', 'GG-Grandsire')}
+          ${pedBox(g2ss?.dam  ? dogs[String(g2ss.dam)]  : null, g2ss?.dam  ? String(g2ss.dam)  : null, 'ped-g3-ssd', 'GG-Granddam')}
+          ${pedBox(g2sd?.sire ? dogs[String(g2sd.sire)] : null, g2sd?.sire ? String(g2sd.sire) : null, 'ped-g3-sds', 'GG-Grandsire')}
+          ${pedBox(g2sd?.dam  ? dogs[String(g2sd.dam)]  : null, g2sd?.dam  ? String(g2sd.dam)  : null, 'ped-g3-sdd', 'GG-Granddam')}
+          ${pedBox(g2ds?.sire ? dogs[String(g2ds.sire)] : null, g2ds?.sire ? String(g2ds.sire) : null, 'ped-g3-dss', 'GG-Grandsire')}
+          ${pedBox(g2ds?.dam  ? dogs[String(g2ds.dam)]  : null, g2ds?.dam  ? String(g2ds.dam)  : null, 'ped-g3-dsd', 'GG-Granddam')}
+          ${pedBox(g2dd?.sire ? dogs[String(g2dd.sire)] : null, g2dd?.sire ? String(g2dd.sire) : null, 'ped-g3-dds', 'GG-Grandsire')}
+          ${pedBox(g2dd?.dam  ? dogs[String(g2dd.dam)]  : null, g2dd?.dam  ? String(g2dd.dam)  : null, 'ped-g3-ddd', 'GG-Granddam')}
         </div>`;
       }
 
