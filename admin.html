@@ -150,6 +150,58 @@
       .delete-btn:hover { background: #c0392b; color: white; }
 
       .loading { padding: 40px; text-align: center; font-size: 0.7rem; letter-spacing: 0.2em; color: var(--brown); text-transform: uppercase; }
+
+      @media (max-width: 768px) {
+          .admin-body {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          max-height: 40vh;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .edit-panel {
+          padding: 30px 24px;
+          max-height: none;
+        }
+
+        .sidebar-header {
+          padding: 14px 20px;
+        }
+
+        .admin-header h1 {
+          font-size: 1.1rem;
+        }
+
+        .admin-user {
+          display: none;
+        }
+
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .form-field.full {
+          grid-column: 1;
+        }
+
+        .form-actions {
+          flex-wrap: wrap;
+        }
+
+        .delete-btn {
+          margin-left: 0;
+          width: 100%;
+          text-align: center;
+        } 
+
+        .edit-panel h2 {
+          font-size: 1.4rem;
+        }
+      }
+
     </style>
   </head>
   <body>
