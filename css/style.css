@@ -1051,6 +1051,29 @@ a.dog-card-link {
 .ped-box.unknown { border-left: 3px solid #ccc; opacity: 0.5; }
 .ped-box-name { color: var(--dark); font-weight: 300; line-height: 1.35; }
 .ped-box-role { font-size: 0.55rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent); margin-top: 3px; }
+/* dogs.html — card link wrapper (duplicated from index, consolidated here) */
+.dog-info-full h3 em {
+    font-style: italic;
+    color: var(--accent);
+    font-size: inherit;
+}
+
+.dog-card-full .dog-info-full::after {
+    content: '→';
+    display: block;
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    margin-top: 12px;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.dog-card-full:hover .dog-info-full::after {
+    opacity: 1;
+    transform: translateX(0);
+}
 .ped-box-link {
   display: contents;
   text-decoration: none;
