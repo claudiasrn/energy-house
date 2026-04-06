@@ -908,7 +908,7 @@ footer {
 a.dog-card-link {
     text-decoration: none;
     color: inherit;
-    display: contents;
+    display: block;
 }
 
 /* Loading state while Firestore fetch is in flight (homepage grid) */
