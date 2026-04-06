@@ -202,6 +202,31 @@
         }
       }
 
+      /* ── TABS ── */
+      .tab-btn {
+        background: none;
+        border: 1px solid rgba(255,255,255,0.2);
+        color: rgba(255,255,255,0.5);
+        padding: 7px 18px;
+        font-family: 'Jost', sans-serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .tab-btn:hover {
+        color: white;
+        border-color: rgba(255,255,255,0.4);
+      }
+
+      .tab-btn.active {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border-color: rgba(255,255,255,0.4);
+      }
+
     </style>
   </head>
   <body>
@@ -221,15 +246,16 @@
     </div>
 
     <!-- ADMIN -->
-    <div id="admin-screen">
-      <div class="admin-header">
-        <h1>Energy House <em style="font-style:italic;color:rgba(255,255,255,0.35)">Admin</em></h1>
-        <div style="display:flex;align-items:center">
-          <span class="admin-user" id="a-user"></span>
-          <button class="logout-btn" onclick="doSignOut()">Sign out</button>
-        </div>
+    <div class="admin-header">
+      <h1>Energy House <em style="font-style:italic;color:rgba(255,255,255,0.35)">Admin</em></h1>
+      <div style="display:flex;align-items:center;gap:16px">
+        <button class="tab-btn active" id="tab-dogs" onclick="switchTab('dogs')">Dogs</button>
+        <button class="tab-btn" id="tab-journal" onclick="switchTab('journal')">Journal</button>
+        <span class="admin-user" id="a-user"></span>
+        <button class="logout-btn" onclick="doSignOut()">Sign out</button>
       </div>
-      <div class="admin-body">
+    </div>
+      <div class="admin-body" id="dogs-panel">
         <div class="sidebar">
           <div class="sidebar-header">
             <input class="sidebar-search" id="search-input" placeholder="Search dogs..." oninput="filterList()" />
@@ -242,6 +268,25 @@
         <div class="edit-panel" id="edit-panel">
           <div class="edit-empty">← Select a dog to edit</div>
         </div>
+      </div>
+    </div>
+
+    </div>
+    </div>
+
+    <!-- JOURNAL PANEL -->
+    <div class="admin-body" id="journal-panel" style="display:none;">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <input class="sidebar-search" id="journal-search" placeholder="Search entries..." oninput="filterJournal()" />
+          <button class="add-btn" onclick="showNewEntry()">+ New</button>
+        </div>
+        <div class="dog-list" id="journal-list">
+          <div class="loading">Loading...</div>
+        </div>
+      </div>
+      <div class="edit-panel" id="journal-edit-panel">
+        <div class="edit-empty">← Select an entry to edit</div>
       </div>
     </div>
 
@@ -694,6 +739,222 @@
         allDogs[newId] = data;
         renderList(document.getElementById('search-input').value);
         selectDog(newId);
+      };
+
+      // ── Tab switching ─────────────────────────────────────────────
+      window.switchTab = (tab) => {
+        document.getElementById('dogs-panel').style.display    = tab === 'dogs'    ? 'grid' : 'none';
+        document.getElementById('journal-panel').style.display = tab === 'journal' ? 'grid' : 'none';
+        document.getElementById('tab-dogs').classList.toggle('active',    tab === 'dogs');
+        document.getElementById('tab-journal').classList.toggle('active', tab === 'journal');
+        if (tab === 'journal' && !journalLoaded) loadAllEntries();
+      };
+
+      // ── Journal state ─────────────────────────────────────────────
+      let allEntries   = {};
+      let currentEntry = null;
+      let journalLoaded = false;
+
+      // ── Load all entries ──────────────────────────────────────────
+      async function loadAllEntries() {
+        const snap = await getDocs(collection(db, 'articles'));
+        allEntries = {};
+        snap.forEach(d => { allEntries[d.id] = d.data(); });
+        journalLoaded = true;
+        renderJournalList();
+      }
+
+      // ── Journal sidebar list ──────────────────────────────────────
+      function renderJournalList(filter = '') {
+        const list = document.getElementById('journal-list');
+        const q    = filter.toLowerCase();
+        const entries = Object.keys(allEntries)
+          .filter(id => !q || allEntries[id].title?.toLowerCase().includes(q))
+          .sort((a, b) => (allEntries[b].date || '').localeCompare(allEntries[a].date || ''));
+
+        if (!entries.length) { list.innerHTML = '<div class="loading">No entries found</div>'; return; }
+
+        list.innerHTML = entries.map(id => {
+          const e = allEntries[id];
+          return `<div class="dog-item${currentEntry===id?' active':''}" id="jli-${id}" onclick="selectEntry('${id}')">
+            <div>
+              <div class="dog-item-name">${e.title || 'Untitled'}</div>
+              <div class="dog-item-meta">${e.date || 'No date'} · ${e.published ? 'Published' : 'Draft'}</div>
+            </div>
+            ${e.published ? '<div class="dog-item-dot"></div>' : ''}
+          </div>`;
+        }).join('');
+      }
+
+      window.filterJournal = () => renderJournalList(document.getElementById('journal-search').value);
+
+      // ── Select entry ──────────────────────────────────────────────
+      window.selectEntry = (id) => {
+        currentEntry = id;
+        document.querySelectorAll('#journal-list .dog-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(`jli-${id}`)?.classList.add('active');
+        renderEntryPanel(id);
+      };
+
+      // ── Entry edit panel ──────────────────────────────────────────
+      function renderEntryPanel(id) {
+        const e = allEntries[id] || {};
+        document.getElementById('journal-edit-panel').innerHTML = `
+          <h2>${e.title || 'Untitled'}</h2>
+          <p class="edit-meta">ID #${id}</p>
+
+          <p class="section-label">Content</p>
+          <div class="form-grid">
+            <div class="form-field full">
+              <label>Title</label>
+              <input id="je-title" type="text" value="${e.title || ''}" placeholder="e.g. The Perfect French Bulldog Structure" />
+            </div>
+            <div class="form-field full">
+              <label>Intro (shown on Journal listing page)</label>
+              <textarea id="je-intro" rows="3" style="padding:11px 13px;border:1px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:0.82rem;color:var(--dark);outline:none;width:100%;resize:vertical;">${e.intro || ''}</textarea>
+            </div>
+            <div class="form-field full">
+              <label>Body (separate paragraphs with a blank line)</label>
+              <textarea id="je-body" rows="16" style="padding:11px 13px;border:1px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:0.82rem;color:var(--dark);outline:none;width:100%;resize:vertical;line-height:1.8;">${e.body || ''}</textarea>
+            </div>
+          </div>
+
+          <p class="section-label">Details</p>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Date</label>
+              <input id="je-date" type="text" value="${e.date || ''}" placeholder="e.g. 07.04.2025" />
+            </div>
+            <div class="form-field">
+              <label>Cover Photo URL</label>
+              <input id="je-photo" type="text" value="${e.photo || ''}" placeholder="e.g. images/article-cover.jpg" />
+            </div>
+          </div>
+
+          <p class="section-label">Visibility</p>
+          <div class="form-grid">
+            ${makeToggle('je-published', !!e.published,
+              'Published',
+              'Visible on the public Journal page'
+            )}
+          </div>
+
+          <div class="form-actions">
+            <button class="save-btn" id="je-save-btn" onclick="saveEntry('${id}')">Save</button>
+            <span class="save-ok" id="je-save-ok">Saved ✓</span>
+            <button class="delete-btn" onclick="deleteEntry('${id}')">Delete Entry</button>
+          </div>`;
+      }
+
+      // ── Save entry ────────────────────────────────────────────────
+      window.saveEntry = async (id) => {
+        const btn = document.getElementById('je-save-btn');
+        btn.disabled = true; btn.textContent = 'Saving...';
+
+        const data = {
+          title:     document.getElementById('je-title').value.trim(),
+          intro:     document.getElementById('je-intro').value.trim(),
+          body:      document.getElementById('je-body').value.trim(),
+          date:      document.getElementById('je-date').value.trim(),
+          photo:     document.getElementById('je-photo').value.trim(),
+          published: document.getElementById('je-published').checked,
+        };
+
+        await setDoc(doc(db, 'articles', String(id)), data);
+        allEntries[id] = data;
+
+        btn.disabled = false; btn.textContent = 'Save';
+        const ok = document.getElementById('je-save-ok');
+        ok.style.display = 'block';
+        setTimeout(() => ok.style.display = 'none', 2500);
+
+        renderJournalList(document.getElementById('journal-search').value);
+        document.getElementById(`jli-${id}`)?.classList.add('active');
+        document.querySelector('#journal-edit-panel h2').textContent = data.title;
+      };
+
+      // ── Delete entry ──────────────────────────────────────────────
+      window.deleteEntry = async (id) => {
+        const title = allEntries[id]?.title || 'this entry';
+        if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+        await deleteDoc(doc(db, 'articles', String(id)));
+        delete allEntries[id];
+        currentEntry = null;
+        document.getElementById('journal-edit-panel').innerHTML = '<div class="edit-empty">Entry deleted</div>';
+        renderJournalList(document.getElementById('journal-search').value);
+      };
+
+      // ── New entry ─────────────────────────────────────────────────
+      window.showNewEntry = () => {
+        currentEntry = null;
+        document.querySelectorAll('#journal-list .dog-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('journal-edit-panel').innerHTML = `
+          <h2>New Entry</h2>
+          <p class="edit-meta">Will be assigned a new ID automatically</p>
+
+          <p class="section-label">Content</p>
+          <div class="form-grid">
+            <div class="form-field full">
+              <label>Title</label>
+              <input id="je-title" type="text" placeholder="e.g. The Perfect French Bulldog Structure" />
+            </div>
+            <div class="form-field full">
+              <label>Intro (shown on Journal listing page)</label>
+              <textarea id="je-intro" rows="3" style="padding:11px 13px;border:1px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:0.82rem;color:var(--dark);outline:none;width:100%;resize:vertical;"></textarea>
+            </div>
+            <div class="form-field full">
+              <label>Body (separate paragraphs with a blank line)</label>
+              <textarea id="je-body" rows="16" style="padding:11px 13px;border:1px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:0.82rem;color:var(--dark);outline:none;width:100%;resize:vertical;line-height:1.8;"></textarea>
+            </div>
+          </div>
+
+          <p class="section-label">Details</p>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Date</label>
+              <input id="je-date" type="text" placeholder="e.g. 07.04.2025" />
+            </div>
+            <div class="form-field">
+              <label>Cover Photo URL</label>
+              <input id="je-photo" type="text" placeholder="e.g. images/article-cover.jpg" />
+            </div>
+          </div>
+
+          <p class="section-label">Visibility</p>
+          <div class="form-grid">
+            ${makeToggle('je-published', false,
+              'Published',
+              'Visible on the public Journal page'
+            )}
+          </div>
+
+          <div class="form-actions">
+            <button class="save-btn" onclick="saveNewEntry()">Add Entry</button>
+            <span class="save-ok" id="je-save-ok"></span>
+          </div>`;
+      };
+
+      // ── Save new entry ────────────────────────────────────────────
+      window.saveNewEntry = async () => {
+        const title = document.getElementById('je-title').value.trim();
+        if (!title) { alert('Please enter a title.'); return; }
+
+        const existingIds = Object.keys(allEntries).map(Number);
+        const newId = String(Math.max(...existingIds, 0) + 1);
+
+        const data = {
+          title,
+          intro:     document.getElementById('je-intro').value.trim(),
+          body:      document.getElementById('je-body').value.trim(),
+          date:      document.getElementById('je-date').value.trim(),
+          photo:     document.getElementById('je-photo').value.trim(),
+          published: document.getElementById('je-published').checked,
+        };
+
+        await setDoc(doc(db, 'articles', newId), data);
+        allEntries[newId] = data;
+        renderJournalList(document.getElementById('journal-search').value);
+        selectEntry(newId);
       };
 
     </script>
