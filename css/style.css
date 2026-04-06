@@ -1131,8 +1131,8 @@ a.dog-card-link {
 
 @media (max-width: 900px) {
     .dog-profile-hero { grid-template-columns: 1fr; padding-top: 80px; }
-    .dog-profile-photo { position: static; height: 100vw; min-height: 300px; }
-    .dog-profile-photo img { object-position: top; }
+    .dog-profile-photo { position: static; height: 120vw; min-height: 300px; }
+    .dog-profile-photo img { object-position: center; }
     .dog-profile-info { padding: 50px 30px; }
     .ped-g3-sss,.ped-g3-ssd,.ped-g3-sds,.ped-g3-sdd,.ped-g3-dss,.ped-g3-dsd,.ped-g3-dds,.ped-g3-ddd { display: none; }
     .pedigree-tree { grid-template-columns: 1fr 1fr; }
