@@ -1,247 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet" />
     <meta charset="UTF-8" />
-    <meta name="description" content="French Bulldog profile — Energy House kennel, Sremska Mitrovica, Serbia." />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta property="og:title" content="Energy House — French Bulldog Kennel" />
+    <meta name="description" content="French Bulldog profile — Energy House kennel, Sremska Mitrovica, Serbia." />
+    <meta property="og:title"       content="Energy House — French Bulldog Kennel" />
     <meta property="og:description" content="French Bulldog profile — Energy House kennel, Sremska Mitrovica, Serbia." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://energyhouse.rs/dog.html" />
-    <link rel="canonical" href="https://energyhouse.rs/dog.html" />   
-    <title>Dog Profile — Energy House</title>
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://energyhouse.rs/dog.html" />
+    <link rel="canonical" href="https://energyhouse.rs/dog.html" />
+    <link rel="icon"       href="images/logo-icon.png" type="image/png" />
     <link rel="stylesheet" href="css/style.css" />
-    <link rel="icon" href="images/logo-icon.png" type="image/png" />
-  </head>
-  <body>
+    <title>Dog Profile — Energy House</title>
+</head>
+<body>
+
+    <!-- ── NAVIGATION ───────────────────────────────────────────────────── -->
     <nav>
-      <img src="images/logo-icon.png" class="nav-logo" alt="Energy House" width="80" height="80"/>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="dogs.html">Our Dogs</a></li>
-        <li><a href="journal.html">Journal</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-      <button class="nav-toggle" aria-label="Toggle navigation">
-          <span></span>
-          <span></span>
-          <span></span>
-      </button>
+        <img src="images/logo-icon.png" class="nav-logo" alt="Energy House" width="80" height="80" />
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="dogs.html">Our Dogs</a></li>
+            <li><a href="journal.html">Journal</a></li>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <button class="nav-toggle" aria-label="Toggle navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </nav>
 
+    <!-- ── PAGE CONTENT ──────────────────────────────────────────────────── -->
+    <!-- Replaced by the script below once the dog data is fetched.
+         Shows a spinner in the meantime. -->
     <div id="page-content">
-      <div class="dog-profile-hero">
-        <div class="dog-not-found" style="grid-column:1/-1">
-  <div class="spinner"></div>
-  <p style="font-family:'Jost',sans-serif;font-size:0.7rem;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;">Loading...</p>
-</div>
-      </div>
+        <div class="dog-profile-hero">
+            <div class="dog-not-found" style="grid-column: 1 / -1;">
+                <div class="spinner"></div>
+                <p style="font-family: 'Jost', sans-serif; font-size: 0.7rem; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase;">Loading...</p>
+            </div>
+        </div>
     </div>
 
+    <!-- ── FOOTER ────────────────────────────────────────────────────────── -->
     <footer>
-      <div class="footer-logo">
-        <img src="images/logo-icon.png" alt="Energy House" class="footer-icon" width="50" height="50"/>
-        <img src="images/logo-text.png" alt="Energy House" class="footer-title-img" width="200" height="35"/>
-      </div>
-      <div class="footer-links">
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="dogs.html">Our Dogs</a>
-        <a href="journal.html">Journal</a>
-        <a href="contact.html">Contact</a>
-      </div>
-      <div class="footer-social">
-        <a href="https://instagram.com/energyhouse26" target="_blank">Instagram</a>
-        <a href="https://www.facebook.com/share/1GFuo3yJwV/" target="_blank">Facebook</a>
-        <p>© 2025 Energy House. All rights reserved.</p>
-      </div>
+        <div class="footer-logo">
+            <img src="images/logo-icon.png" alt="Energy House" class="footer-icon" width="50" height="50" />
+            <img src="images/logo-text.png" alt="Energy House" class="footer-title-img" width="200" height="35" />
+        </div>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="dogs.html">Our Dogs</a>
+            <a href="journal.html">Journal</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <div class="footer-social">
+            <a href="https://instagram.com/energyhouse26" target="_blank">Instagram</a>
+            <a href="https://www.facebook.com/share/1GFuo3yJwV/" target="_blank">Facebook</a>
+            <p>© 2025 Energy House. All rights reserved.</p>
+        </div>
     </footer>
 
+
+    <!-- ── DOG PROFILE SCRIPT ────────────────────────────────────────────── -->
     <script type="module">
-      // Use Firestore REST API directly — avoids SDK streaming connection issues
-      const PROJECT = "energy-house-60783";
-      const BASE    = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
+        const PROJECT = 'energy-house-60783';
+        const BASE    = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
 
-      // ── Helpers ──────────────────────────────────────────────────
-      function formatName(fullName) {
-        const suffixes = [" of Energy House", " for Energy House", " at Energy House"];
-        for (const suffix of suffixes) {
-          if (fullName?.endsWith(suffix)) {
-            return { main: fullName.slice(0, -suffix.length), suffix: suffix.trim() };
-          }
+        // ── Helpers ───────────────────────────────────────────────────────────
+
+        // Splits "Paint it Black of Energy House" into two parts so the
+        // suffix can be styled in italic/accent inside the heading.
+        function formatName(fullName) {
+            const suffixes = [' of Energy House', ' for Energy House', ' at Energy House'];
+            for (const suffix of suffixes) {
+                if (fullName?.endsWith(suffix)) {
+                    return { main: fullName.slice(0, -suffix.length), suffix: suffix.trim() };
+                }
+            }
+            return { main: fullName || '—', suffix: '' };
         }
-        return { main: fullName || "—", suffix: "" };
-      }
 
-      function metaItem(label, value) {
-        return `<div class="dog-meta-item">
-          <span class="dog-meta-label">${label}</span>
-          <span class="dog-meta-value">${value || '—'}</span>
-        </div>`;
-      }
-
-      function pedBox(dog, dogId, cssClass, role) {
-        const name = dog?.name || '—';
-        const side = dog ? (dog.sex === 'M' ? 'sire' : 'dam') : 'unknown';
-        const box  = `<div class="ped-box ${cssClass} ${side}">
-          <span class="ped-box-name">${name}</span>
-          <span class="ped-box-role">${role}</span>
-        </div>`;
-        return dog?.show && dogId
-          ? `<a href="dog.html?id=${dogId}" class="ped-box-link">${box}</a>`
-          : box;
-    }
-
-      function buildTree(dog, dogs, dogIds) {
-        const sireId = dog.sire  ? String(dog.sire)  : null;
-        const damId  = dog.dam   ? String(dog.dam)   : null;
-        const sire   = sireId ? dogs[sireId] : null;
-        const dam    = damId  ? dogs[damId]  : null;
-
-        const g2ssId = sire?.sire ? String(sire.sire) : null;
-        const g2sdId = sire?.dam  ? String(sire.dam)  : null;
-        const g2dsId = dam?.sire  ? String(dam.sire)  : null;
-        const g2ddId = dam?.dam   ? String(dam.dam)   : null;
-        const g2ss   = g2ssId ? dogs[g2ssId] : null;
-        const g2sd   = g2sdId ? dogs[g2sdId] : null;
-        const g2ds   = g2dsId ? dogs[g2dsId] : null;
-        const g2dd   = g2ddId ? dogs[g2ddId] : null;
-
-        return `<div class="pedigree-tree">
-          ${pedBox(sire,  sireId,  'ped-g1-sire', 'Sire')}
-          ${pedBox(dam,   damId,   'ped-g1-dam',  'Dam')}
-          ${pedBox(g2ss,  g2ssId,  'ped-g2-ss',   'Paternal Grandsire')}
-          ${pedBox(g2sd,  g2sdId,  'ped-g2-sd',   'Paternal Granddam')}
-          ${pedBox(g2ds,  g2dsId,  'ped-g2-ds',   'Maternal Grandsire')}
-          ${pedBox(g2dd,  g2ddId,  'ped-g2-dd',   'Maternal Granddam')}
-          ${pedBox(g2ss?.sire ? dogs[String(g2ss.sire)] : null, g2ss?.sire ? String(g2ss.sire) : null, 'ped-g3-sss', 'GG-Grandsire')}
-          ${pedBox(g2ss?.dam  ? dogs[String(g2ss.dam)]  : null, g2ss?.dam  ? String(g2ss.dam)  : null, 'ped-g3-ssd', 'GG-Granddam')}
-          ${pedBox(g2sd?.sire ? dogs[String(g2sd.sire)] : null, g2sd?.sire ? String(g2sd.sire) : null, 'ped-g3-sds', 'GG-Grandsire')}
-          ${pedBox(g2sd?.dam  ? dogs[String(g2sd.dam)]  : null, g2sd?.dam  ? String(g2sd.dam)  : null, 'ped-g3-sdd', 'GG-Granddam')}
-          ${pedBox(g2ds?.sire ? dogs[String(g2ds.sire)] : null, g2ds?.sire ? String(g2ds.sire) : null, 'ped-g3-dss', 'GG-Grandsire')}
-          ${pedBox(g2ds?.dam  ? dogs[String(g2ds.dam)]  : null, g2ds?.dam  ? String(g2ds.dam)  : null, 'ped-g3-dsd', 'GG-Granddam')}
-          ${pedBox(g2dd?.sire ? dogs[String(g2dd.sire)] : null, g2dd?.sire ? String(g2dd.sire) : null, 'ped-g3-dds', 'GG-Grandsire')}
-          ${pedBox(g2dd?.dam  ? dogs[String(g2dd.dam)]  : null, g2dd?.dam  ? String(g2dd.dam)  : null, 'ped-g3-ddd', 'GG-Granddam')}
-        </div>`;
-      }
-
-      // ── REST helpers ─────────────────────────────────────────────
-      function parseDoc(firestoreDoc) {
-        // Convert Firestore REST format to plain object
-        const fields = firestoreDoc.fields || {};
-        const out = {};
-        for (const [k, v] of Object.entries(fields)) {
-          if      (v.stringValue  !== undefined) out[k] = v.stringValue;
-          else if (v.integerValue !== undefined) out[k] = Number(v.integerValue);
-          else if (v.doubleValue  !== undefined) out[k] = v.doubleValue;
-          else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
-          else if (v.nullValue    !== undefined) out[k] = null;
-          else out[k] = null;
+        // Returns one meta grid item (label + value).
+        function metaItem(label, value) {
+            return `
+                <div class="dog-meta-item">
+                    <span class="dog-meta-label">${label}</span>
+                    <span class="dog-meta-value">${value || '—'}</span>
+                </div>`;
         }
-        return out;
-      }
 
-      async function fetchDog(id) {
-        try {
-          const res = await fetch(`${BASE}/dogs/${id}`);
-          if (!res.ok) return null;
-          const data = await res.json();
-          return parseDoc(data);
-        } catch(e) { return null; }
-      }
+        // Returns one pedigree box, wrapped in an <a> tag if the dog has a
+        // public profile (show === true), otherwise plain HTML.
+        function pedBox(dog, dogId, cssClass, role) {
+            const name = dog?.name || '—';
+            const side = dog ? (dog.sex === 'M' ? 'sire' : 'dam') : 'unknown';
+            const box  = `
+                <div class="ped-box ${cssClass} ${side}">
+                    <span class="ped-box-name">${name}</span>
+                    <span class="ped-box-role">${role}</span>
+                </div>`;
+            return dog?.show && dogId
+                ? `<a href="dog.html?id=${dogId}" class="ped-box-link">${box}</a>`
+                : box;
+        }
 
-// ── Main ─────────────────────────────────────────────────────
-      function renderPage(dog, dogs) {
-        const { main, suffix } = formatName(dog.name);
-        const content = document.getElementById('page-content');
-        const photoHtml = dog.photo
-          ? `<img src="${dog.photo}" alt="${dog.name}" />`
-          : '[ Photo ]';
+        // Builds the full 3-generation pedigree tree HTML.
+        // dogs is a map of { id: dogObject } built up incrementally as
+        // ancestor fetches complete.
+        function buildTree(dog, dogs) {
+            const sireId = dog.sire ? String(dog.sire) : null;
+            const damId  = dog.dam  ? String(dog.dam)  : null;
+            const sire   = sireId ? dogs[sireId] : null;
+            const dam    = damId  ? dogs[damId]  : null;
 
-        content.innerHTML = `
-          <div class="dog-profile-hero">
-            <div class="dog-profile-photo">${photoHtml}</div>
-            <div class="dog-profile-info">
-              <a href="dogs.html" class="back-link">Our Dogs</a>
-              <p class="dog-profile-sex">${dog.sex === 'M' ? 'Male' : 'Female'}</p>
-              <h1 class="dog-profile-name">
-                ${main}${suffix ? `<br /><em>${suffix}</em>` : ''}
-              </h1>
-              <div class="dog-meta-grid">
-                ${metaItem('Date of Birth', dog.dob)}
-                ${metaItem('Color',         dog.color)}
-                ${metaItem('Titles',        dog.titles)}
-                ${metaItem('Registration',  dog.reg)}
-              </div>
-              ${dog.bio ? `<p class="dog-bio">${dog.bio}</p>` : ''}
-              <div class="pedigree-section">
-                <p class="pedigree-heading">Pedigree</p>
-                ${buildTree(dog, dogs)}
-              </div>
-              <a href="contact.html" class="btn fade-in">
-                Enquire About This Dog
-              </a>
-            </div>
-          </div>`;
-      }
+            const g2ssId = sire?.sire ? String(sire.sire) : null;
+            const g2sdId = sire?.dam  ? String(sire.dam)  : null;
+            const g2dsId = dam?.sire  ? String(dam.sire)  : null;
+            const g2ddId = dam?.dam   ? String(dam.dam)   : null;
+            const g2ss   = g2ssId ? dogs[g2ssId] : null;
+            const g2sd   = g2sdId ? dogs[g2sdId] : null;
+            const g2ds   = g2dsId ? dogs[g2dsId] : null;
+            const g2dd   = g2ddId ? dogs[g2ddId] : null;
 
-      async function render() {
-        const params  = new URLSearchParams(window.location.search);
-        const id      = params.get('id');
-        const content = document.getElementById('page-content');
+            return `
+                <div class="pedigree-tree">
+                    ${pedBox(sire,  sireId,  'ped-g1-sire', 'Sire')}
+                    ${pedBox(dam,   damId,   'ped-g1-dam',  'Dam')}
+                    ${pedBox(g2ss,  g2ssId,  'ped-g2-ss',   'Paternal Grandsire')}
+                    ${pedBox(g2sd,  g2sdId,  'ped-g2-sd',   'Paternal Granddam')}
+                    ${pedBox(g2ds,  g2dsId,  'ped-g2-ds',   'Maternal Grandsire')}
+                    ${pedBox(g2dd,  g2ddId,  'ped-g2-dd',   'Maternal Granddam')}
+                    ${pedBox(g2ss?.sire ? dogs[String(g2ss.sire)] : null, g2ss?.sire ? String(g2ss.sire) : null, 'ped-g3-sss', 'GG-Grandsire')}
+                    ${pedBox(g2ss?.dam  ? dogs[String(g2ss.dam)]  : null, g2ss?.dam  ? String(g2ss.dam)  : null, 'ped-g3-ssd', 'GG-Granddam')}
+                    ${pedBox(g2sd?.sire ? dogs[String(g2sd.sire)] : null, g2sd?.sire ? String(g2sd.sire) : null, 'ped-g3-sds', 'GG-Grandsire')}
+                    ${pedBox(g2sd?.dam  ? dogs[String(g2sd.dam)]  : null, g2sd?.dam  ? String(g2sd.dam)  : null, 'ped-g3-sdd', 'GG-Granddam')}
+                    ${pedBox(g2ds?.sire ? dogs[String(g2ds.sire)] : null, g2ds?.sire ? String(g2ds.sire) : null, 'ped-g3-dss', 'GG-Grandsire')}
+                    ${pedBox(g2ds?.dam  ? dogs[String(g2ds.dam)]  : null, g2ds?.dam  ? String(g2ds.dam)  : null, 'ped-g3-dsd', 'GG-Granddam')}
+                    ${pedBox(g2dd?.sire ? dogs[String(g2dd.sire)] : null, g2dd?.sire ? String(g2dd.sire) : null, 'ped-g3-dds', 'GG-Grandsire')}
+                    ${pedBox(g2dd?.dam  ? dogs[String(g2dd.dam)]  : null, g2dd?.dam  ? String(g2dd.dam)  : null, 'ped-g3-ddd', 'GG-Granddam')}
+                </div>`;
+        }
 
-        if (!id) { content.innerHTML = notFound(); return; }
+        // ── REST helpers ──────────────────────────────────────────────────────
 
-        const dog = await fetchDog(id);
-        if (!dog) { content.innerHTML = notFound(); return; }
+        // Converts Firestore's typed field format into a plain JS object.
+        function parseDoc(firestoreDoc) {
+            const fields = firestoreDoc.fields || {};
+            const out = {};
+            for (const [k, v] of Object.entries(fields)) {
+                if      (v.stringValue  !== undefined) out[k] = v.stringValue;
+                else if (v.integerValue !== undefined) out[k] = Number(v.integerValue);
+                else if (v.doubleValue  !== undefined) out[k] = v.doubleValue;
+                else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
+                else if (v.nullValue    !== undefined) out[k] = null;
+                else out[k] = null;
+            }
+            return out;
+        }
 
-        const { main, suffix } = formatName(dog.name);
-document.title = `${main} — Energy House`;
+        async function fetchDog(id) {
+            try {
+                const res = await fetch(`${BASE}/dogs/${id}`);
+                if (!res.ok) return null;
+                return parseDoc(await res.json());
+            } catch {
+                return null;
+            }
+        }
 
-// Open Graph
-document.querySelector('meta[property="og:title"]').setAttribute('content', `${main} — Energy House`);
-document.querySelector('meta[property="og:description"]').setAttribute('content', `${dog.sex === 'M' ? 'Male' : 'Female'} French Bulldog${dog.titles ? ', ' + dog.titles : ''}. Energy House kennel, Sremska Mitrovica, Serbia.`);
-document.querySelector('link[rel="canonical"]').setAttribute('href', `https://energyhouse.rs/dog.html?id=${id}`);
+        // ── Render ────────────────────────────────────────────────────────────
 
-        const dogs = { [String(id)]: dog };
+        // Injects the full dog profile into #page-content.
+        // dogs is the accumulator map built up as ancestor fetches complete.
+        function renderPage(dog, dogs) {
+            const { main, suffix } = formatName(dog.name);
+            const photoHtml = dog.photo
+                ? `<img src="${dog.photo}" alt="${dog.name}" />`
+                : '[ Photo ]';
 
-        // Gen 1 — wait for this before rendering so sire/dam show immediately
-        const g1ids = [dog.sire, dog.dam].filter(Boolean).map(String);
-        const g1    = await Promise.all(g1ids.map(fetchDog));
-        g1ids.forEach((aid, i) => { if (g1[i]) dogs[aid] = g1[i]; });
+            document.getElementById('page-content').innerHTML = `
+                <div class="dog-profile-hero">
+                    <div class="dog-profile-photo">${photoHtml}</div>
+                    <div class="dog-profile-info">
+                        <a href="dogs.html" class="back-link">Our Dogs</a>
+                        <p class="dog-profile-sex">${dog.sex === 'M' ? 'Male' : 'Female'}</p>
+                        <h1 class="dog-profile-name">
+                            ${main}${suffix ? `<br /><em>${suffix}</em>` : ''}
+                        </h1>
+                        <div class="dog-meta-grid">
+                            ${metaItem('Date of Birth', dog.dob)}
+                            ${metaItem('Color',         dog.color)}
+                            ${metaItem('Titles',        dog.titles)}
+                            ${metaItem('Registration',  dog.reg)}
+                        </div>
+                        ${dog.bio ? `<p class="dog-bio">${dog.bio}</p>` : ''}
+                        <div class="pedigree-section">
+                            <p class="pedigree-heading">Pedigree</p>
+                            ${buildTree(dog, dogs)}
+                        </div>
+                        <a href="contact.html" class="btn fade-in">Enquire About This Dog</a>
+                    </div>
+                </div>`;
+        }
 
-        // Render now — dog info + gen 1 is ready
-        renderPage(dog, dogs);
+        function notFound() {
+            return `
+                <div class="dog-profile-hero">
+                    <div class="dog-not-found">
+                        <h2>Dog not found</h2>
+                        <p><a href="dogs.html" style="color: var(--accent); font-family: 'Jost', sans-serif; font-size: 0.75rem;">← Back to Our Dogs</a></p>
+                    </div>
+                </div>`;
+        }
 
-        // Gen 2 + 3 load in background, then patch just the pedigree tree
-        (async () => {
-          const g2ids = [...new Set(g1.flatMap(d => d ? [d.sire, d.dam].filter(Boolean).map(String) : []))];
-          const g2    = await Promise.all(g2ids.map(fetchDog));
-          g2ids.forEach((aid, i) => { if (g2[i]) dogs[aid] = g2[i]; });
+        // ── Main ──────────────────────────────────────────────────────────────
+        async function render() {
+            const params  = new URLSearchParams(window.location.search);
+            const id      = params.get('id');
+            const content = document.getElementById('page-content');
 
-          const g3ids = [...new Set(g2.flatMap(d => d ? [d.sire, d.dam].filter(Boolean).map(String) : []))];
-          const g3    = await Promise.all(g3ids.map(fetchDog));
-          g3ids.forEach((aid, i) => { if (g3[i]) dogs[aid] = g3[i]; });
+            if (!id) { content.innerHTML = notFound(); return; }
 
-          // Patch only the pedigree tree — no full page re-render
-          const treeEl = document.querySelector('.pedigree-tree');
-          if (treeEl) treeEl.outerHTML = buildTree(dog, dogs);
-        })();
-      }
+            const dog = await fetchDog(id);
+            if (!dog) { content.innerHTML = notFound(); return; }
 
-      function notFound() {
-        return `<div class="dog-profile-hero">
-          <div class="dog-not-found">
-            <h2>Dog not found</h2>
-            <p><a href="dogs.html" style="color:var(--accent); font-family:'Jost',sans-serif;font-size:0.75rem;">← Back to Our Dogs</a></p>
-          </div>
-        </div>`;
-      }
+            // Update page title and meta tags with the dog's actual data
+            const { main } = formatName(dog.name);
+            document.title = `${main} — Energy House`;
+            document.querySelector('meta[property="og:title"]')      .setAttribute('content', `${main} — Energy House`);
+            document.querySelector('meta[property="og:description"]') .setAttribute('content', `${dog.sex === 'M' ? 'Male' : 'Female'} French Bulldog${dog.titles ? ', ' + dog.titles : ''}. Energy House kennel, Sremska Mitrovica, Serbia.`);
+            document.querySelector('link[rel="canonical"]')           .setAttribute('href',    `https://energyhouse.rs/dog.html?id=${id}`);
 
-      render();
+            // Build an accumulator map — we'll add ancestors to it as they load
+            const dogs = { [String(id)]: dog };
+
+            // Gen 1 — fetch sire and dam before rendering so they appear immediately
+            const g1ids = [dog.sire, dog.dam].filter(Boolean).map(String);
+            const g1    = await Promise.all(g1ids.map(fetchDog));
+            g1ids.forEach((aid, i) => { if (g1[i]) dogs[aid] = g1[i]; });
+
+            // Render the full page — dog info + gen 1 is ready
+            renderPage(dog, dogs);
+
+            // Gen 2 + 3 load in the background, then patch only the pedigree tree
+            (async () => {
+                const g2ids = [...new Set(g1.flatMap(d => d ? [d.sire, d.dam].filter(Boolean).map(String) : []))];
+                const g2    = await Promise.all(g2ids.map(fetchDog));
+                g2ids.forEach((aid, i) => { if (g2[i]) dogs[aid] = g2[i]; });
+
+                const g3ids = [...new Set(g2.flatMap(d => d ? [d.sire, d.dam].filter(Boolean).map(String) : []))];
+                const g3    = await Promise.all(g3ids.map(fetchDog));
+                g3ids.forEach((aid, i) => { if (g3[i]) dogs[aid] = g3[i]; });
+
+                // Patch just the tree element — no full page re-render needed
+                const treeEl = document.querySelector('.pedigree-tree');
+                if (treeEl) treeEl.outerHTML = buildTree(dog, dogs);
+            })();
+        }
+
+        render();
     </script>
+
     <script src="js/main.js"></script>
-  </body>
+</body>
 </html>

@@ -1,130 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Journal entry — Energy House French Bulldog kennel." />
-    <meta property="og:title" content="Journal — Energy House" />
+    <meta name="description"        content="Journal entry — Energy House French Bulldog kennel." />
+    <meta property="og:title"       content="Journal — Energy House" />
     <meta property="og:description" content="Journal entry — Energy House French Bulldog kennel." />
-    <meta property="og:type" content="article" />
-    <meta property="og:url" content="https://energyhouse.rs/entry.html" />
+    <meta property="og:type"        content="article" />
+    <meta property="og:url"         content="https://energyhouse.rs/entry.html" />
     <link rel="canonical" href="https://energyhouse.rs/entry.html" />
-    <title>Journal — Energy House</title>
-    <link rel="icon" href="images/logo-icon.png" type="image/png" />
+    <link rel="icon"       href="images/logo-icon.png" type="image/png" />
     <link rel="stylesheet" href="css/style.css" />
-  </head>
-  <body>
+    <title>Journal — Energy House</title>
+</head>
+<body>
 
+    <!-- ── NAVIGATION ───────────────────────────────────────────────────── -->
     <nav>
-      <img src="images/logo-icon.png" class="nav-logo" alt="Energy House" width="80" height="80"/>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="dogs.html">Our Dogs</a></li>
-        <li><a href="journal.html">Journal</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-      <button class="nav-toggle" aria-label="Toggle navigation">
-        <span></span><span></span><span></span>
-      </button>
+        <img src="images/logo-icon.png" class="nav-logo" alt="Energy House" width="80" height="80" />
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="dogs.html">Our Dogs</a></li>
+            <li><a href="journal.html">Journal</a></li>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <button class="nav-toggle" aria-label="Toggle navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </nav>
 
+    <!-- ── PAGE CONTENT ──────────────────────────────────────────────────── -->
+    <!-- Replaced by the script below once the entry is fetched.
+         Shows a spinner in the meantime. -->
     <div id="page-content">
-      <div class="entry-loading">
-        <div class="spinner"></div>
-      </div>
+        <div class="entry-loading">
+            <div class="spinner"></div>
+        </div>
     </div>
 
+    <!-- ── FOOTER ────────────────────────────────────────────────────────── -->
     <footer>
-      <div class="footer-logo">
-        <img src="images/logo-icon.png" alt="Energy House" class="footer-icon" width="50" height="50"/>
-        <img src="images/logo-text.png" alt="Energy House" class="footer-title-img" width="200" height="35"/>
-      </div>
-      <div class="footer-links">
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="dogs.html">Our Dogs</a>
-        <a href="journal.html">Journal</a>
-        <a href="contact.html">Contact</a>
-      </div>
-      <div class="footer-social">
-        <a href="https://instagram.com/energyhouse26" target="_blank">Instagram</a>
-        <a href="https://www.facebook.com/share/1GFuo3yJwV/" target="_blank">Facebook</a>
-        <p>© 2025 Energy House. All rights reserved.</p>
-      </div>
+        <div class="footer-logo">
+            <img src="images/logo-icon.png" alt="Energy House" class="footer-icon" width="50" height="50" />
+            <img src="images/logo-text.png" alt="Energy House" class="footer-title-img" width="200" height="35" />
+        </div>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="dogs.html">Our Dogs</a>
+            <a href="journal.html">Journal</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <div class="footer-social">
+            <a href="https://instagram.com/energyhouse26" target="_blank">Instagram</a>
+            <a href="https://www.facebook.com/share/1GFuo3yJwV/" target="_blank">Facebook</a>
+            <p>© 2025 Energy House. All rights reserved.</p>
+        </div>
     </footer>
 
+
+    <!-- ── ENTRY SCRIPT ──────────────────────────────────────────────────── -->
     <script type="module">
-      const PROJECT = "energy-house-60783";
-      const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
+        const PROJECT = 'energy-house-60783';
+        const BASE    = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
 
-      function parseDoc(doc) {
-        const fields = doc.fields || {};
-        const out = {};
-        for (const [k, v] of Object.entries(fields)) {
-          if      (v.stringValue  !== undefined) out[k] = v.stringValue;
-          else if (v.integerValue !== undefined) out[k] = Number(v.integerValue);
-          else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
-          else out[k] = null;
+        // Converts Firestore's typed field format into a plain JS object.
+        function parseDoc(doc) {
+            const fields = doc.fields || {};
+            const out = {};
+            for (const [k, v] of Object.entries(fields)) {
+                if      (v.stringValue  !== undefined) out[k] = v.stringValue;
+                else if (v.integerValue !== undefined) out[k] = Number(v.integerValue);
+                else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
+                else out[k] = null;
+            }
+            return out;
         }
-        return out;
-      }
 
-      // Converts plain text to paragraphs by splitting on blank lines
-      function textToHtml(text) {
-        if (!text) return '';
-        return text
-          .split(/\n\s*\n/)
-          .map(p => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`)
-          .join('');
-      }
-
-      async function render() {
-        const content = document.getElementById('page-content');
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-
-        if (!id) { content.innerHTML = notFound(); return; }
-
-        try {
-          const res = await fetch(`${BASE}/articles/${id}`);
-          if (!res.ok) { content.innerHTML = notFound(); return; }
-          const data = await res.json();
-          const a = parseDoc(data);
-
-          // Update meta tags
-          document.title = `${a.title} — Energy House`;
-          document.querySelector('meta[property="og:title"]').setAttribute('content', `${a.title} — Energy House`);
-          document.querySelector('meta[property="og:description"]').setAttribute('content', a.intro || '');
-          document.querySelector('link[rel="canonical"]').setAttribute('href', `https://energyhouse.rs/entry.html?id=${id}`);
-
-          content.innerHTML = `
-            <article class="entry-article">
-              ${a.photo ? `<div class="entry-cover"><img src="${a.photo}" alt="${a.title}" /></div>` : ''}
-              <div class="entry-body">
-                <a href="journal.html" class="back-link">Journal</a>
-                <p class="entry-date">${a.date || ''}</p>
-                <h1 class="entry-title">${a.title || 'Untitled'}</h1>
-                <div class="entry-text">${textToHtml(a.body)}</div>
-              </div>
-            </article>`;
-
-        } catch(err) {
-          content.innerHTML = notFound();
-          console.error(err);
+        // Converts plain text into paragraphs by splitting on blank lines.
+        // Within a paragraph, single newlines become <br> tags.
+        function textToHtml(text) {
+            if (!text) return '';
+            return text
+                .split(/\n\s*\n/)
+                .map(p => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`)
+                .join('');
         }
-      }
 
-      function notFound() {
-        return `<div class="dog-not-found">
-          <h2>Entry not found</h2>
-          <p><a href="journal.html" style="color:var(--accent);font-family:'Jost',sans-serif;font-size:0.75rem;">← Back to Journal</a></p>
-        </div>`;
-      }
+        async function render() {
+            const content = document.getElementById('page-content');
+            const params  = new URLSearchParams(window.location.search);
+            const id      = params.get('id');
 
-      render();
+            if (!id) { content.innerHTML = notFound(); return; }
+
+            try {
+                const res = await fetch(`${BASE}/articles/${id}`);
+                if (!res.ok) { content.innerHTML = notFound(); return; }
+
+                const a = parseDoc(await res.json());
+
+                // Update meta tags with the entry's actual data
+                document.title = `${a.title} — Energy House`;
+                document.querySelector('meta[property="og:title"]')      .setAttribute('content', `${a.title} — Energy House`);
+                document.querySelector('meta[property="og:description"]') .setAttribute('content', a.intro || '');
+                document.querySelector('link[rel="canonical"]')           .setAttribute('href',    `https://energyhouse.rs/entry.html?id=${id}`);
+
+                content.innerHTML = `
+                    <article class="entry-article">
+                        ${a.photo ? `<div class="entry-cover"><img src="${a.photo}" alt="${a.title}" /></div>` : ''}
+                        <div class="entry-body">
+                            <a href="journal.html" class="back-link">Journal</a>
+                            <p class="entry-date">${a.date || ''}</p>
+                            <h1 class="entry-title">${a.title || 'Untitled'}</h1>
+                            <div class="entry-text">${textToHtml(a.body)}</div>
+                        </div>
+                    </article>`;
+
+            } catch (err) {
+                content.innerHTML = notFound();
+                console.error(err);
+            }
+        }
+
+        function notFound() {
+            return `
+                <div class="dog-not-found">
+                    <h2>Entry not found</h2>
+                    <p><a href="journal.html" style="color: var(--accent); font-family: 'Jost', sans-serif; font-size: 0.75rem;">← Back to Journal</a></p>
+                </div>`;
+        }
+
+        render();
     </script>
+
     <script src="js/main.js"></script>
-  </body>
+</body>
 </html>

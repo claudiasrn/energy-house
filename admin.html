@@ -1,966 +1,1392 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin — Energy House</title>
     <style>
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      :root {
-        --brown:  #8b5a2b;
-        --dark:   #2c1a0e;
-        --cream:  #f5f0e8;
-        --white:  #ffffff;
-        --border: rgba(139,90,43,0.2);
-      }
-      body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--dark); min-height: 100vh; }
+        /* ==========================================================================
+           RESET & TOKENS
+        ========================================================================== */
 
-      /* ── LOGIN ── */
-      #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 40px; }
-      .login-box { background: var(--white); border: 1px solid var(--border); padding: 60px 50px; width: 100%; max-width: 420px; text-align: center; }
-      .login-logo { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; margin-bottom: 6px; }
-      .login-sub  { font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--brown); margin-bottom: 48px; }
-      .login-box input { width: 100%; padding: 14px 16px; border: 1px solid var(--border); background: var(--cream); font-family: 'Jost', sans-serif; font-size: 0.85rem; color: var(--dark); margin-bottom: 12px; outline: none; transition: border-color 0.2s; }
-      .login-box input:focus { border-color: var(--brown); }
-      .login-btn { width: 100%; padding: 14px; background: var(--brown); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; margin-top: 4px; }
-      .login-btn:hover { background: var(--dark); }
-      .login-btn:disabled { background: #ccc; cursor: not-allowed; }
-      .login-error { color: #c0392b; font-size: 0.7rem; margin-top: 14px; min-height: 20px; }
-      .forgot-btn { display: block; margin-top: 16px; font-size: 0.65rem; letter-spacing: 0.15em; color: var(--brown); background: none; border: none; font-family: 'Jost', sans-serif; cursor: pointer; width: 100%; }
-      .forgot-btn:hover { text-decoration: underline; }
-      .reset-msg { font-size: 0.7rem; color: #27ae60; margin-top: 10px; display: none; }
-
-      /* ── ADMIN ── */
-      #admin-screen { display: none; }
-      .admin-header { background: var(--dark); color: white; padding: 18px 40px; display: flex; align-items: center; justify-content: space-between; }
-      .admin-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; }
-      .admin-user { font-size: 0.65rem; letter-spacing: 0.2em; color: rgba(255,255,255,0.4); margin-right: 16px; }
-      .logout-btn { background: none; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; font-family: 'Jost', sans-serif; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; }
-      .logout-btn:hover { background: rgba(255,255,255,0.1); }
-
-      .admin-body { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 61px); }
-
-      /* Sidebar */
-      .sidebar { border-right: 1px solid var(--border); display: flex; flex-direction: column; max-height: calc(100vh - 61px); }
-      .sidebar-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; position: sticky; top: 0; background: var(--cream); z-index: 1; }
-      .sidebar-search { flex: 1; padding: 8px 12px; border: 1px solid var(--border); background: white; font-family: 'Jost', sans-serif; font-size: 0.75rem; color: var(--dark); outline: none; }
-      .sidebar-search:focus { border-color: var(--brown); }
-      .add-btn { padding: 8px 14px; background: var(--brown); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em; cursor: pointer; white-space: nowrap; }
-      .add-btn:hover { background: var(--dark); }
-      .dog-list { overflow-y: auto; flex: 1; }
-      .dog-item { padding: 12px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: space-between; }
-      .dog-item:hover { background: white; }
-      .dog-item.active { background: white; border-left: 3px solid var(--brown); padding-left: 17px; }
-      .dog-item-name { font-size: 0.78rem; line-height: 1.3; }
-      .dog-item-meta { font-size: 0.58rem; letter-spacing: 0.15em; color: var(--brown); margin-top: 2px; }
-      .dog-item-dot  { width: 6px; height: 6px; border-radius: 50%; background: #27ae60; flex-shrink: 0; }
-
-      /* Edit panel */
-      .edit-panel { padding: 44px 56px; overflow-y: auto; max-height: calc(100vh - 61px); }
-      .edit-empty { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brown); }
-      .edit-panel h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 300; margin-bottom: 4px; }
-      .edit-meta { font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--brown); margin-bottom: 36px; }
-
-      .section-label { font-size: 0.6rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--brown); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
-
-      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }
-      .form-field { display: flex; flex-direction: column; gap: 7px; }
-      .form-field.full { grid-column: 1 / -1; }
-      .form-field label { font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--brown); }
-      .form-field input, .form-field select {
-        padding: 11px 13px;
-        border: 1px solid var(--border);
-        background: white;
-        font-family: 'Jost', sans-serif;
-        font-size: 0.82rem;
-        color: var(--dark);
-        outline: none;
-        transition: border-color 0.2s;
-      }
-      .form-field input:focus, .form-field select:focus { border-color: var(--brown); }
-
-      /* Parent search */
-      .parent-search-wrap { position: relative; }
-      .parent-search-wrap input { width: 100%; }
-      .parent-dropdown {
-        position: absolute;
-        top: 100%;
-        left: 0; right: 0;
-        background: white;
-        border: 1px solid var(--border);
-        border-top: none;
-        max-height: 200px;
-        overflow-y: auto;
-        z-index: 10;
-        display: none;
-      }
-      .parent-dropdown-item { padding: 9px 13px; font-size: 0.75rem; cursor: pointer; border-bottom: 1px solid var(--border); }
-      .parent-dropdown-item:hover { background: var(--cream); }
-      .parent-dropdown-item .pid { font-size: 0.6rem; color: var(--brown); margin-left: 6px; }
-      .parent-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--brown); line-height: 1; }
-
-      /* ── TOGGLE ROWS ──
-         Each toggle sits full-width in the form grid.
-         Label text on the left, pill switch + On/Off on the right. */
-      .toggle-row {
-        grid-column: 1 / -1;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 14px 16px;
-        border: 1px solid var(--border);
-        background: white;
-      }
-      .toggle-row-label { display: flex; flex-direction: column; gap: 4px; }
-      .toggle-row-label strong { font-size: 0.78rem; font-weight: 400; color: var(--dark); }
-      .toggle-row-label span  { font-size: 0.62rem; color: var(--brown); letter-spacing: 0.05em; }
-      .toggle-switch { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
-      .toggle-switch input[type="checkbox"] { display: none; }
-      /* The pill track */
-      .toggle-track {
-        width: 44px; height: 24px; border-radius: 12px;
-        background: rgba(139,90,43,0.1);
-        border: 1px solid var(--border);
-        position: relative;
-        transition: background 0.25s, border-color 0.25s;
-        flex-shrink: 0;
-      }
-      /* The sliding circle */
-      .toggle-track::after {
-        content: '';
-        position: absolute;
-        top: 3px; left: 3px;
-        width: 16px; height: 16px;
-        border-radius: 50%;
-        background: #bbb;
-        transition: transform 0.25s, background 0.25s;
-      }
-      .toggle-track.is-on { background: rgba(139,90,43,0.15); border-color: var(--brown); }
-      .toggle-track.is-on::after { transform: translateX(20px); background: var(--brown); }
-      .toggle-status { font-size: 0.7rem; color: #bbb; min-width: 24px; transition: color 0.25s; }
-      .toggle-status.is-on { color: var(--brown); }
-
-      .form-actions { display: flex; gap: 14px; align-items: center; margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border); }
-      .save-btn { padding: 12px 32px; background: var(--brown); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
-      .save-btn:hover { background: var(--dark); }
-      .save-btn:disabled { background: #ccc; cursor: not-allowed; }
-      .save-ok { font-size: 0.7rem; color: #27ae60; display: none; }
-      .delete-btn { margin-left: auto; padding: 12px 20px; background: none; color: #c0392b; border: 1px solid #c0392b; font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
-      .delete-btn:hover { background: #c0392b; color: white; }
-
-      .loading { padding: 40px; text-align: center; font-size: 0.7rem; letter-spacing: 0.2em; color: var(--brown); text-transform: uppercase; }
-
-      @media (max-width: 768px) {
-          .admin-body {
-          grid-template-columns: 1fr;
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        .sidebar {
-          max-height: 40vh;
-          border-right: none;
-          border-bottom: 1px solid var(--border);
+        :root {
+            --brown:  #8b5a2b;
+            --dark:   #2c1a0e;
+            --cream:  #f5f0e8;
+            --white:  #ffffff;
+            --border: rgba(139, 90, 43, 0.2);
         }
 
-        .edit-panel {
-          padding: 30px 24px;
-          max-height: none;
+        body {
+            font-family: 'Jost', sans-serif;
+            background: var(--cream);
+            color: var(--dark);
+            min-height: 100vh;
         }
 
-        .sidebar-header {
-          padding: 14px 20px;
+
+        /* ==========================================================================
+           LOGIN SCREEN
+        ========================================================================== */
+
+        #login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .login-box {
+            background: var(--white);
+            border: 1px solid var(--border);
+            padding: 60px 50px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+
+        .login-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 6px;
+        }
+
+        .login-sub {
+            font-size: 0.65rem;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--brown);
+            margin-bottom: 48px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            background: var(--cream);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.85rem;
+            color: var(--dark);
+            margin-bottom: 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .login-box input:focus {
+            border-color: var(--brown);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--brown);
+            color: white;
+            border: none;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 4px;
+        }
+
+        .login-btn:hover     { background: var(--dark); }
+        .login-btn:disabled  { background: #ccc; cursor: not-allowed; }
+
+        .login-error {
+            color: #c0392b;
+            font-size: 0.7rem;
+            margin-top: 14px;
+            min-height: 20px;
+        }
+
+        .forgot-btn {
+            display: block;
+            margin-top: 16px;
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            color: var(--brown);
+            background: none;
+            border: none;
+            font-family: 'Jost', sans-serif;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .forgot-btn:hover { text-decoration: underline; }
+
+        .reset-msg {
+            font-size: 0.7rem;
+            color: #27ae60;
+            margin-top: 10px;
+            display: none;
+        }
+
+
+        /* ==========================================================================
+           ADMIN SHELL
+        ========================================================================== */
+
+        #admin-screen {
+            display: none;
+        }
+
+        .admin-header {
+            background: var(--dark);
+            color: white;
+            padding: 18px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .admin-header h1 {
-          font-size: 1.1rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 300;
         }
 
         .admin-user {
-          display: none;
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            color: rgba(255, 255, 255, 0.4);
+            margin-right: 16px;
         }
 
+        .logout-btn {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover { background: rgba(255, 255, 255, 0.1); }
+
+        /* Tabs in the header */
+        .tab-btn {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
+            padding: 7px 18px;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: white;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .tab-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+
+        /* ==========================================================================
+           ADMIN BODY  (sidebar + edit panel layout)
+        ========================================================================== */
+
+        .admin-body {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: calc(100vh - 61px);
+        }
+
+        /* ── Sidebar ── */
+
+        .sidebar {
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 61px);
+        }
+
+        .sidebar-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            background: var(--cream);
+            z-index: 1;
+        }
+
+        .sidebar-search {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            background: white;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.75rem;
+            color: var(--dark);
+            outline: none;
+        }
+
+        .sidebar-search:focus { border-color: var(--brown); }
+
+        .add-btn {
+            padding: 8px 14px;
+            background: var(--brown);
+            color: white;
+            border: none;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .add-btn:hover { background: var(--dark); }
+
+        .dog-list {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .dog-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dog-item:hover { background: white; }
+
+        .dog-item.active {
+            background: white;
+            border-left: 3px solid var(--brown);
+            padding-left: 17px;
+        }
+
+        .dog-item-name { font-size: 0.78rem; line-height: 1.3; }
+        .dog-item-meta { font-size: 0.58rem; letter-spacing: 0.15em; color: var(--brown); margin-top: 2px; }
+        .dog-item-dot  { width: 6px; height: 6px; border-radius: 50%; background: #27ae60; flex-shrink: 0; }
+
+        /* ── Edit panel ── */
+
+        .edit-panel {
+            padding: 44px 56px;
+            overflow-y: auto;
+            max-height: calc(100vh - 61px);
+        }
+
+        .edit-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--brown);
+        }
+
+        .edit-panel h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 300;
+            margin-bottom: 4px;
+        }
+
+        .edit-meta {
+            font-size: 0.6rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--brown);
+            margin-bottom: 36px;
+        }
+
+        .section-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--brown);
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .loading {
+            padding: 40px;
+            text-align: center;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            color: var(--brown);
+            text-transform: uppercase;
+        }
+
+
+        /* ==========================================================================
+           FORM FIELDS
+        ========================================================================== */
+
         .form-grid {
-          grid-template-columns: 1fr;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
         }
 
         .form-field.full {
-          grid-column: 1;
+            grid-column: 1 / -1;
         }
 
+        .form-field label {
+            font-size: 0.58rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--brown);
+        }
+
+        .form-field input,
+        .form-field select {
+            padding: 11px 13px;
+            border: 1px solid var(--border);
+            background: white;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.82rem;
+            color: var(--dark);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus {
+            border-color: var(--brown);
+        }
+
+
+        /* ==========================================================================
+           PARENT SEARCH  (autocomplete dropdown for sire / dam)
+        ========================================================================== */
+
+        .parent-search-wrap {
+            position: relative;
+        }
+
+        .parent-search-wrap input {
+            width: 100%;
+        }
+
+        .parent-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border);
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+
+        .parent-dropdown-item {
+            padding: 9px 13px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .parent-dropdown-item:hover { background: var(--cream); }
+
+        .parent-dropdown-item .pid {
+            font-size: 0.6rem;
+            color: var(--brown);
+            margin-left: 6px;
+        }
+
+        .parent-clear {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--brown);
+            line-height: 1;
+        }
+
+
+        /* ==========================================================================
+           TOGGLE ROWS  (show / featured / published switches)
+        ========================================================================== */
+
+        /* Full-width row: label text on the left, pill switch on the right */
+        .toggle-row {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            background: white;
+        }
+
+        .toggle-row-label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .toggle-row-label strong {
+            font-size: 0.78rem;
+            font-weight: 400;
+            color: var(--dark);
+        }
+
+        .toggle-row-label span {
+            font-size: 0.62rem;
+            color: var(--brown);
+            letter-spacing: 0.05em;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* The actual checkbox is hidden — the pill track is the visual */
+        .toggle-switch input[type="checkbox"] {
+            display: none;
+        }
+
+        .toggle-track {
+            width: 44px;
+            height: 24px;
+            border-radius: 12px;
+            background: rgba(139, 90, 43, 0.1);
+            border: 1px solid var(--border);
+            position: relative;
+            transition: background 0.25s, border-color 0.25s;
+            flex-shrink: 0;
+        }
+
+        /* Sliding circle inside the pill */
+        .toggle-track::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #bbb;
+            transition: transform 0.25s, background 0.25s;
+        }
+
+        .toggle-track.is-on {
+            background: rgba(139, 90, 43, 0.15);
+            border-color: var(--brown);
+        }
+
+        .toggle-track.is-on::after {
+            transform: translateX(20px);
+            background: var(--brown);
+        }
+
+        .toggle-status {
+            font-size: 0.7rem;
+            color: #bbb;
+            min-width: 24px;
+            transition: color 0.25s;
+        }
+
+        .toggle-status.is-on { color: var(--brown); }
+
+
+        /* ==========================================================================
+           FORM ACTIONS  (save / delete buttons)
+        ========================================================================== */
+
         .form-actions {
-          flex-wrap: wrap;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .save-btn {
+            padding: 12px 32px;
+            background: var(--brown);
+            color: white;
+            border: none;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .save-btn:hover     { background: var(--dark); }
+        .save-btn:disabled  { background: #ccc; cursor: not-allowed; }
+
+        .save-ok {
+            font-size: 0.7rem;
+            color: #27ae60;
+            display: none;
         }
 
         .delete-btn {
-          margin-left: 0;
-          width: 100%;
-          text-align: center;
-        } 
-
-        .edit-panel h2 {
-          font-size: 1.4rem;
+            margin-left: auto;
+            padding: 12px 20px;
+            background: none;
+            color: #c0392b;
+            border: 1px solid #c0392b;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.62rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-      }
 
-      /* ── TABS ── */
-      .tab-btn {
-        background: none;
-        border: 1px solid rgba(255,255,255,0.2);
-        color: rgba(255,255,255,0.5);
-        padding: 7px 18px;
-        font-family: 'Jost', sans-serif;
-        font-size: 0.65rem;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
+        .delete-btn:hover {
+            background: #c0392b;
+            color: white;
+        }
 
-      .tab-btn:hover {
-        color: white;
-        border-color: rgba(255,255,255,0.4);
-      }
 
-      .tab-btn.active {
-        background: rgba(255,255,255,0.1);
-        color: white;
-        border-color: rgba(255,255,255,0.4);
-      }
+        /* ==========================================================================
+           RESPONSIVE  (≤ 768px)
+        ========================================================================== */
 
+        @media (max-width: 768px) {
+
+            .admin-body {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .edit-panel {
+                padding: 30px 24px;
+                max-height: none;
+            }
+
+            .admin-header h1 { font-size: 1.1rem; }
+            .admin-user      { display: none; }
+
+            .form-grid { grid-template-columns: 1fr; }
+            .form-field.full { grid-column: 1; }
+
+            .form-actions { flex-wrap: wrap; }
+
+            .delete-btn {
+                margin-left: 0;
+                width: 100%;
+                text-align: center;
+            }
+
+            .edit-panel h2 { font-size: 1.4rem; }
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
 
-    <!-- LOGIN -->
+    <!-- ── LOGIN SCREEN ──────────────────────────────────────────────────── -->
     <div id="login-screen">
-      <div class="login-box">
-        <p class="login-logo">Energy House</p>
-        <p class="login-sub">Admin Panel</p>
-        <input type="email"    id="l-email" placeholder="Email" autocomplete="email" />
-        <input type="password" id="l-pass"  placeholder="Password" autocomplete="current-password" />
-        <button class="login-btn" id="l-btn" onclick="signIn()">Sign In</button>
-        <p class="login-error" id="l-err"></p>
-        <button class="forgot-btn" onclick="resetPw()">Forgot password?</button>
-        <p class="reset-msg" id="reset-msg">Reset email sent ✓</p>
-      </div>
+        <div class="login-box">
+            <p class="login-logo">Energy House</p>
+            <p class="login-sub">Admin Panel</p>
+            <input type="email"    id="l-email" placeholder="Email"    autocomplete="email" />
+            <input type="password" id="l-pass"  placeholder="Password" autocomplete="current-password" />
+            <button class="login-btn" id="l-btn" onclick="signIn()">Sign In</button>
+            <p class="login-error" id="l-err"></p>
+            <button class="forgot-btn" onclick="resetPw()">Forgot password?</button>
+            <p class="reset-msg" id="reset-msg">Reset email sent ✓</p>
+        </div>
     </div>
 
-    <!-- ADMIN -->
-    <!-- ADMIN -->
+    <!-- ── ADMIN SCREEN ───────────────────────────────────────────────────── -->
     <div id="admin-screen">
-    <div class="admin-header">
-      <h1>Energy House <em style="font-style:italic;color:rgba(255,255,255,0.35)">Admin</em></h1>
-      <div style="display:flex;align-items:center;gap:16px">
-        <button class="tab-btn active" id="tab-dogs" onclick="switchTab('dogs')">Dogs</button>
-        <button class="tab-btn" id="tab-journal" onclick="switchTab('journal')">Journal</button>
-        <span class="admin-user" id="a-user"></span>
-        <button class="logout-btn" onclick="doSignOut()">Sign out</button>
-      </div>
-    </div>
-      <div class="admin-body" id="dogs-panel">
-        <div class="sidebar">
-          <div class="sidebar-header">
-            <input class="sidebar-search" id="search-input" placeholder="Search dogs..." oninput="filterList()" />
-            <button class="add-btn" onclick="showNewDog()">+ New</button>
-          </div>
-          <div class="dog-list" id="dog-list">
-            <div class="loading">Loading...</div>
-          </div>
-        </div>
-        <div class="edit-panel" id="edit-panel">
-          <div class="edit-empty">← Select a dog to edit</div>
-        </div>
-      </div>
-    </div>
 
-    </div>
-    </div>
-
-    <!-- JOURNAL PANEL -->
-    <div class="admin-body" id="journal-panel" style="display:none;">
-      <div class="sidebar">
-        <div class="sidebar-header">
-          <input class="sidebar-search" id="journal-search" placeholder="Search entries..." oninput="filterJournal()" />
-          <button class="add-btn" onclick="showNewEntry()">+ New</button>
+        <!-- Header -->
+        <div class="admin-header">
+            <h1>Energy House <em style="font-style: italic; color: rgba(255,255,255,0.35);">Admin</em></h1>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <button class="tab-btn active" id="tab-dogs"    onclick="switchTab('dogs')">Dogs</button>
+                <button class="tab-btn"        id="tab-journal" onclick="switchTab('journal')">Journal</button>
+                <span class="admin-user" id="a-user"></span>
+                <button class="logout-btn" onclick="doSignOut()">Sign out</button>
+            </div>
         </div>
-        <div class="dog-list" id="journal-list">
-          <div class="loading">Loading...</div>
-        </div>
-      </div>
-      <div class="edit-panel" id="journal-edit-panel">
-        <div class="edit-empty">← Select an entry to edit</div>
-      </div>
-    </div>
-    
-    </div>
 
+        <!-- Dogs panel -->
+        <div class="admin-body" id="dogs-panel">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <input class="sidebar-search" id="search-input" placeholder="Search dogs..." oninput="filterList()" />
+                    <button class="add-btn" onclick="showNewDog()">+ New</button>
+                </div>
+                <div class="dog-list" id="dog-list">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+            <div class="edit-panel" id="edit-panel">
+                <div class="edit-empty">← Select a dog to edit</div>
+            </div>
+        </div>
+
+        <!-- Journal panel -->
+        <div class="admin-body" id="journal-panel" style="display: none;">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <input class="sidebar-search" id="journal-search" placeholder="Search entries..." oninput="filterJournal()" />
+                    <button class="add-btn" onclick="showNewEntry()">+ New</button>
+                </div>
+                <div class="dog-list" id="journal-list">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+            <div class="edit-panel" id="journal-edit-panel">
+                <div class="edit-empty">← Select an entry to edit</div>
+            </div>
+        </div>
+
+    </div><!-- /#admin-screen -->
+
+
+    <!-- ── ADMIN SCRIPT ──────────────────────────────────────────────────── -->
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-      import { getAuth, signInWithEmailAndPassword, signOut as fbSignOut, sendPasswordResetEmail, onAuthStateChanged }
-        from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-      import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, writeBatch }
-        from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            signOut as fbSignOut,
+            sendPasswordResetEmail,
+            onAuthStateChanged,
+        } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
+        import {
+            getFirestore,
+            doc, getDoc, setDoc, deleteDoc,
+            collection, getDocs,
+        } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
 
-      const firebaseConfig = {
-        apiKey:            "AIzaSyABuitLs7paqWiHRGfjaAqYP41sNBpH3wA",
-        authDomain:        "energy-house-60783.firebaseapp.com",
-        projectId:         "energy-house-60783",
-        storageBucket:     "energy-house-60783.firebasestorage.app",
-        messagingSenderId: "133999728706",
-        appId:             "1:133999728706:web:6fb756a536b2dc87d975db",
-      };
+        const firebaseConfig = {
+            apiKey:            'AIzaSyABuitLs7paqWiHRGfjaAqYP41sNBpH3wA',
+            authDomain:        'energy-house-60783.firebaseapp.com',
+            projectId:         'energy-house-60783',
+            storageBucket:     'energy-house-60783.firebasestorage.app',
+            messagingSenderId: '133999728706',
+            appId:             '1:133999728706:web:6fb756a536b2dc87d975db',
+        };
 
-      const app  = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const db   = getFirestore(app);
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getFirestore(app);
 
-      // ── State ────────────────────────────────────────────────────
-      let allDogs   = {};
-      let currentId = null;
+        // ── State ─────────────────────────────────────────────────────────────
 
-      // ── Auth ─────────────────────────────────────────────────────
-      onAuthStateChanged(auth, user => {
-        if (user) {
-          document.getElementById('login-screen').style.display = 'none';
-          document.getElementById('admin-screen').style.display = 'block';
-          document.getElementById('a-user').textContent = user.email;
-          loadAllDogs();
-        } else {
-          document.getElementById('login-screen').style.display = 'flex';
-          document.getElementById('admin-screen').style.display = 'none';
+        let allDogs    = {};
+        let currentId  = null;
+        let allEntries = {};
+        let currentEntry  = null;
+        let journalLoaded = false;
+
+
+        // ── Auth ──────────────────────────────────────────────────────────────
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                document.getElementById('login-screen').style.display  = 'none';
+                document.getElementById('admin-screen').style.display  = 'block';
+                document.getElementById('a-user').textContent          = user.email;
+                loadAllDogs();
+            } else {
+                document.getElementById('login-screen').style.display  = 'flex';
+                document.getElementById('admin-screen').style.display  = 'none';
+            }
+        });
+
+        window.signIn = async () => {
+            const email = document.getElementById('l-email').value.trim();
+            const pass  = document.getElementById('l-pass').value;
+            const btn   = document.getElementById('l-btn');
+            const err   = document.getElementById('l-err');
+
+            err.textContent = '';
+            btn.disabled    = true;
+            btn.textContent = 'Signing in...';
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch {
+                err.textContent = 'Incorrect email or password.';
+                btn.disabled    = false;
+                btn.textContent = 'Sign In';
+            }
+        };
+
+        // Allow pressing Enter in the password field to submit
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('l-pass')?.addEventListener('keydown', e => {
+                if (e.key === 'Enter') window.signIn();
+            });
+        });
+
+        window.doSignOut = () => fbSignOut(auth);
+
+        window.resetPw = async () => {
+            const email = document.getElementById('l-email').value.trim();
+            if (!email) { document.getElementById('l-err').textContent = 'Enter your email first.'; return; }
+            await sendPasswordResetEmail(auth, email);
+            document.getElementById('reset-msg').style.display = 'block';
+        };
+
+
+        // ── Tab switching ─────────────────────────────────────────────────────
+
+        window.switchTab = (tab) => {
+            document.getElementById('dogs-panel').style.display    = tab === 'dogs'    ? 'grid' : 'none';
+            document.getElementById('journal-panel').style.display = tab === 'journal' ? 'grid' : 'none';
+            document.getElementById('tab-dogs').classList.toggle('active',    tab === 'dogs');
+            document.getElementById('tab-journal').classList.toggle('active', tab === 'journal');
+            if (tab === 'journal' && !journalLoaded) loadAllEntries();
+        };
+
+
+        // ── Toggle helper ─────────────────────────────────────────────────────
+        // Builds the HTML for one toggle row.
+        // inputId — e.g. "e-show" | checked — current saved boolean
+        // label   — bold title   | hint    — smaller description
+        function makeToggle(inputId, checked, label, hint) {
+            const on = checked ? 'is-on' : '';
+            return `
+                <div class="toggle-row">
+                    <div class="toggle-row-label">
+                        <strong>${label}</strong>
+                        <span>${hint}</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="${inputId}" ${checked ? 'checked' : ''}
+                            onchange="handleToggleClick('${inputId}')" />
+                        <div class="toggle-track ${on}" id="${inputId}-track"></div>
+                        <span class="toggle-status ${on}" id="${inputId}-status">${checked ? 'On' : 'Off'}</span>
+                    </label>
+                </div>`;
         }
-      });
 
-      window.signIn = async () => {
-        const email = document.getElementById('l-email').value.trim();
-        const pass  = document.getElementById('l-pass').value;
-        const btn   = document.getElementById('l-btn');
-        const err   = document.getElementById('l-err');
-        err.textContent = ''; btn.disabled = true; btn.textContent = 'Signing in...';
-        try {
-          await signInWithEmailAndPassword(auth, email, pass);
-        } catch(e) {
-          err.textContent = 'Incorrect email or password.';
-          btn.disabled = false; btn.textContent = 'Sign In';
+        // Updates the visual pill after a toggle changes.
+        // onchange fires after the checkbox has already updated, so
+        // checkbox.checked is already the new correct value.
+        window.handleToggleClick = (inputId) => {
+            const checkbox = document.getElementById(inputId);
+            const track    = document.getElementById(`${inputId}-track`);
+            const status   = document.getElementById(`${inputId}-status`);
+            track.classList.toggle('is-on', checkbox.checked);
+            status.classList.toggle('is-on', checkbox.checked);
+            status.textContent = checkbox.checked ? 'On' : 'Off';
+        };
+
+
+        // ── Dogs — load & render list ─────────────────────────────────────────
+
+        async function loadAllDogs() {
+            const snap = await getDocs(collection(db, 'dogs'));
+            allDogs = {};
+            snap.forEach(d => { allDogs[d.id] = d.data(); });
+            renderList();
         }
-      };
-      document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('l-pass')?.addEventListener('keydown', e => { if(e.key==='Enter') window.signIn(); });
-      });
-      window.doSignOut = () => fbSignOut(auth);
-      window.resetPw = async () => {
-        const email = document.getElementById('l-email').value.trim();
-        if (!email) { document.getElementById('l-err').textContent = 'Enter your email first.'; return; }
-        await sendPasswordResetEmail(auth, email);
-        document.getElementById('reset-msg').style.display = 'block';
-      };
 
-      // ── Load all dogs ─────────────────────────────────────────────
-      async function loadAllDogs() {
-        const snap = await getDocs(collection(db, 'dogs'));
-        allDogs = {};
-        snap.forEach(d => { allDogs[d.id] = d.data(); });
-        renderList();
-      }
+        function renderList(filter = '') {
+            const list = document.getElementById('dog-list');
+            const ids  = Object.keys(allDogs).sort((a, b) => Number(a) - Number(b));
+            const q    = filter.toLowerCase();
+            const filtered = ids.filter(id => !q || allDogs[id].name?.toLowerCase().includes(q));
 
-      // ── Sidebar list ──────────────────────────────────────────────
-      function renderList(filter = '') {
-        const list = document.getElementById('dog-list');
-        const ids  = Object.keys(allDogs).sort((a,b) => Number(a) - Number(b));
-        const q    = filter.toLowerCase();
-        const filtered = ids.filter(id => !q || allDogs[id].name?.toLowerCase().includes(q));
+            if (!filtered.length) { list.innerHTML = '<div class="loading">No dogs found</div>'; return; }
 
-        if (!filtered.length) { list.innerHTML = '<div class="loading">No dogs found</div>'; return; }
+            list.innerHTML = filtered.map(id => {
+                const d   = allDogs[id];
+                const tags = [d.show ? 'Visible' : '', d.featured ? 'Featured' : ''].filter(Boolean).join(' · ');
+                const hasDetails = d.dob || d.color || d.titles || d.photo;
 
-        list.innerHTML = filtered.map(id => {
-          const d = allDogs[id];
-          const hasDetails = d.dob || d.color || d.titles || d.photo;
-          // Show "Visible" and/or "Featured" tags in the sidebar meta line
-          // so Nina can see at a glance which dogs are public without opening each one
-          const tags = [
-            d.show     ? 'Visible'  : '',
-            d.featured ? 'Featured' : '',
-          ].filter(Boolean).join(' · ');
-
-          return `<div class="dog-item${currentId===id?' active':''}" id="li-${id}" onclick="selectDog('${id}')">
-            <div>
-              <div class="dog-item-name">${d.name || `Dog #${id}`}</div>
-              <div class="dog-item-meta">#${id} · ${d.sex==='M'?'Male':'Female'}${tags ? ' · ' + tags : ''}</div>
-            </div>
-            ${hasDetails ? '<div class="dog-item-dot"></div>' : ''}
-          </div>`;
-        }).join('');
-      }
-
-      window.filterList = () => renderList(document.getElementById('search-input').value);
-
-      // ── Select dog ────────────────────────────────────────────────
-      window.selectDog = (id) => {
-        currentId = id;
-        document.querySelectorAll('.dog-item').forEach(el => el.classList.remove('active'));
-        document.getElementById(`li-${id}`)?.classList.add('active');
-        renderEditPanel(id);
-      };
-
-      // ── Toggle helper ─────────────────────────────────────────────
-      // Builds the HTML for one toggle row.
-      // inputId  — e.g. "e-show" or "e-featured"
-      // checked  — boolean, the current saved value
-      // label    — bold title line
-      // hint     — smaller description line
-      function makeToggle(inputId, checked, label, hint) {
-        const on = checked ? 'is-on' : '';
-        return `
-          <div class="toggle-row">
-            <div class="toggle-row-label">
-              <strong>${label}</strong>
-              <span>${hint}</span>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="${inputId}" ${checked ? 'checked' : ''}
-                onchange="handleToggleClick('${inputId}')" />
-              <div class="toggle-track ${on}" id="${inputId}-track"></div>
-              <span class="toggle-status ${on}" id="${inputId}-status">${checked ? 'On' : 'Off'}</span>
-            </label>
-          </div>`;
-      }
-
-      // Updates the visual pill when a toggle is clicked.
-      // The label's onclick fires before the checkbox flips, so we read
-      // the current state and invert it to get the future state.
-      window.handleToggleClick = (inputId) => {
-        const checkbox = document.getElementById(inputId);
-        const track    = document.getElementById(`${inputId}-track`);
-        const status   = document.getElementById(`${inputId}-status`);
-        // onchange fires after the checkbox has already updated,
-        // so checkbox.checked is already the new correct value
-        track.classList.toggle('is-on', checkbox.checked);
-        status.classList.toggle('is-on', checkbox.checked);
-        status.textContent = checkbox.checked ? 'On' : 'Off';
-      };
-
-      // ── Edit panel ────────────────────────────────────────────────
-      function renderEditPanel(id) {
-        const d = allDogs[id] || {};
-        const sireName = d.sire ? (allDogs[String(d.sire)]?.name || `#${d.sire}`) : '';
-        const damName  = d.dam  ? (allDogs[String(d.dam)]?.name  || `#${d.dam}`)  : '';
-
-        document.getElementById('edit-panel').innerHTML = `
-          <h2>${d.name || `Dog #${id}`}</h2>
-          <p class="edit-meta">ID #${id}</p>
-
-          <p class="section-label">Identity</p>
-          <div class="form-grid">
-            <div class="form-field full">
-              <label>Full Name</label>
-              <input id="e-name" type="text" value="${d.name || ''}" />
-            </div>
-            <div class="form-field">
-              <label>Sex</label>
-              <select id="e-sex">
-                <option value="M" ${d.sex==='M'?'selected':''}>Male</option>
-                <option value="F" ${d.sex==='F'?'selected':''}>Female</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>Registration No.</label>
-              <input id="e-reg" type="text" value="${d.reg || ''}" placeholder="e.g. JR 12345/22" />
-            </div>
-          </div>
-
-          <p class="section-label">Pedigree</p>
-          <div class="form-grid">
-            <div class="form-field">
-              <label>Sire (Father)</label>
-              <div class="parent-search-wrap">
-                <input id="e-sire-search" type="text" value="${sireName}"
-                  placeholder="Search by name..." oninput="searchParent('sire', this.value)" autocomplete="off" />
-                <button class="parent-clear" onclick="clearParent('sire')" title="Clear">×</button>
-                <div class="parent-dropdown" id="sire-dropdown"></div>
-              </div>
-              <input type="hidden" id="e-sire-id" value="${d.sire || ''}" />
-            </div>
-            <div class="form-field">
-              <label>Dam (Mother)</label>
-              <div class="parent-search-wrap">
-                <input id="e-dam-search" type="text" value="${damName}"
-                  placeholder="Search by name..." oninput="searchParent('dam', this.value)" autocomplete="off" />
-                <button class="parent-clear" onclick="clearParent('dam')" title="Clear">×</button>
-                <div class="parent-dropdown" id="dam-dropdown"></div>
-              </div>
-              <input type="hidden" id="e-dam-id" value="${d.dam || ''}" />
-            </div>
-          </div>
-
-          <p class="section-label">Details</p>
-          <div class="form-grid">
-            <div class="form-field">
-              <label>Date of Birth</label>
-              <input id="e-dob"    type="text" value="${d.dob    || ''}" placeholder="e.g. 15.03.2022" />
-            </div>
-            <div class="form-field">
-              <label>Color</label>
-              <input id="e-color"  type="text" value="${d.color  || ''}" placeholder="e.g. Blue & White" />
-            </div>
-            <div class="form-field">
-              <label>Titles</label>
-              <input id="e-titles" type="text" value="${d.titles || ''}" placeholder="e.g. CH, JCH" />
-            </div>
-            <div class="form-field full">
-              <label>Photo URL</label>
-              <input id="e-photo"  type="text" value="${d.photo  || ''}" placeholder="e.g. images/paint-it-black.jpg" />
-            </div>
-            <div class="form-field full">
-              <label>Bio</label>
-              <textarea id="e-bio" rows="4" style="padding:11px 13px;border:1px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:0.82rem;color:var(--dark);outline:none;width:100%;resize:vertical;">${d.bio || ''}</textarea>
-            </div>
-          </div>
-
-          <p class="section-label">Visibility</p>
-          <div class="form-grid">
-            ${makeToggle('e-show', !!d.show,
-              'Show on Dogs page',
-              'Appears in the public dogs grid and can be browsed by visitors'
-            )}
-            ${makeToggle('e-featured', !!d.featured,
-              'Feature on Homepage',
-              'Shown in the Featured Dogs section on the front page (max 3)'
-            )}
-          </div>
-
-          <div class="form-actions">
-            <button class="save-btn" id="save-btn" onclick="saveDog('${id}')">Save</button>
-            <span class="save-ok" id="save-ok">Saved ✓</span>
-            <button class="delete-btn" onclick="deleteDog('${id}')">Delete Dog</button>
-          </div>
-        `;
-      }
-
-      // ── Parent search ─────────────────────────────────────────────
-      window.searchParent = (field, query) => {
-        const dropdown = document.getElementById(`${field}-dropdown`);
-        if (!query || query.length < 2) { dropdown.style.display = 'none'; return; }
-        const q = query.toLowerCase();
-        const matches = Object.entries(allDogs)
-          .filter(([id, d]) => d.name?.toLowerCase().includes(q))
-          .slice(0, 12);
-        if (!matches.length) { dropdown.style.display = 'none'; return; }
-        dropdown.innerHTML = matches.map(([id, d]) =>
-          `<div class="parent-dropdown-item" onclick="selectParent('${field}', '${id}', '${d.name?.replace(/'/g,"\\'")}')">
-            ${d.name} <span class="pid">#${id}</span>
-          </div>`
-        ).join('');
-        dropdown.style.display = 'block';
-      };
-
-      window.selectParent = (field, id, name) => {
-        document.getElementById(`e-${field}-search`).value = name;
-        document.getElementById(`e-${field}-id`).value    = id;
-        document.getElementById(`${field}-dropdown`).style.display = 'none';
-      };
-
-      window.clearParent = (field) => {
-        document.getElementById(`e-${field}-search`).value = '';
-        document.getElementById(`e-${field}-id`).value    = '';
-        document.getElementById(`${field}-dropdown`).style.display = 'none';
-      };
-
-      document.addEventListener('click', e => {
-        if (!e.target.closest('.parent-search-wrap')) {
-          document.querySelectorAll('.parent-dropdown').forEach(d => d.style.display = 'none');
+                return `
+                    <div class="dog-item${currentId === id ? ' active' : ''}" id="li-${id}" onclick="selectDog('${id}')">
+                        <div>
+                            <div class="dog-item-name">${d.name || `Dog #${id}`}</div>
+                            <div class="dog-item-meta">#${id} · ${d.sex === 'M' ? 'Male' : 'Female'}${tags ? ' · ' + tags : ''}</div>
+                        </div>
+                        ${hasDetails ? '<div class="dog-item-dot"></div>' : ''}
+                    </div>`;
+            }).join('');
         }
-      });
 
-      // ── Save existing dog ─────────────────────────────────────────
-      window.saveDog = async (id) => {
-        const btn = document.getElementById('save-btn');
-        btn.disabled = true; btn.textContent = 'Saving...';
+        window.filterList = () => renderList(document.getElementById('search-input').value);
 
-        const sireId = document.getElementById('e-sire-id').value;
-        const damId  = document.getElementById('e-dam-id').value;
-
-        const data = {
-          name:     document.getElementById('e-name').value.trim(),
-          sex:      document.getElementById('e-sex').value,
-          sire:     sireId ? Number(sireId) : null,
-          dam:      damId  ? Number(damId)  : null,
-          dob:      document.getElementById('e-dob').value.trim(),
-          color:    document.getElementById('e-color').value.trim(),
-          titles:   document.getElementById('e-titles').value.trim(),
-          photo:    document.getElementById('e-photo').value.trim(),
-          bio: document.getElementById('e-bio').value.trim(),
-          reg:      document.getElementById('e-reg').value.trim(),
-          // .checked reads the actual checkbox boolean — true means toggle is on
-          show:     document.getElementById('e-show').checked,
-          featured: document.getElementById('e-featured').checked,
+        window.selectDog = (id) => {
+            currentId = id;
+            document.querySelectorAll('.dog-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`li-${id}`)?.classList.add('active');
+            renderEditPanel(id);
         };
 
-        await setDoc(doc(db, 'dogs', String(id)), data);
-        allDogs[id] = data;
 
-        btn.disabled = false; btn.textContent = 'Save';
-        const ok = document.getElementById('save-ok');
-        ok.style.display = 'block';
-        setTimeout(() => ok.style.display = 'none', 2500);
+        // ── Dogs — edit panel ─────────────────────────────────────────────────
 
-        renderList(document.getElementById('search-input').value);
-        document.getElementById(`li-${id}`)?.classList.add('active');
-        document.querySelector('#edit-panel h2').textContent = data.name;
-      };
+        function renderEditPanel(id) {
+            const d        = allDogs[id] || {};
+            const sireName = d.sire ? (allDogs[String(d.sire)]?.name || `#${d.sire}`) : '';
+            const damName  = d.dam  ? (allDogs[String(d.dam)]?.name  || `#${d.dam}`)  : '';
 
-      // ── Delete dog ────────────────────────────────────────────────
-      window.deleteDog = async (id) => {
-        const name = allDogs[id]?.name || `Dog #${id}`;
-        if (!confirm(`Delete "${name}" from the database? This cannot be undone.`)) return;
-        await deleteDoc(doc(db, 'dogs', String(id)));
-        delete allDogs[id];
-        currentId = null;
-        document.getElementById('edit-panel').innerHTML = '<div class="edit-empty">Dog deleted</div>';
-        renderList(document.getElementById('search-input').value);
-      };
+            document.getElementById('edit-panel').innerHTML = `
+                <h2>${d.name || `Dog #${id}`}</h2>
+                <p class="edit-meta">ID #${id}</p>
 
-      // ── New dog ───────────────────────────────────────────────────
-      window.showNewDog = () => {
-        currentId = null;
-        document.querySelectorAll('.dog-item').forEach(el => el.classList.remove('active'));
-        document.getElementById('edit-panel').innerHTML = `
-          <h2>New Dog</h2>
-          <p class="edit-meta">Will be assigned a new ID automatically</p>
+                <p class="section-label">Identity</p>
+                <div class="form-grid">
+                    <div class="form-field full">
+                        <label>Full Name</label>
+                        <input id="e-name" type="text" value="${d.name || ''}" />
+                    </div>
+                    <div class="form-field">
+                        <label>Sex</label>
+                        <select id="e-sex">
+                            <option value="M" ${d.sex === 'M' ? 'selected' : ''}>Male</option>
+                            <option value="F" ${d.sex === 'F' ? 'selected' : ''}>Female</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Registration No.</label>
+                        <input id="e-reg" type="text" value="${d.reg || ''}" placeholder="e.g. JR 12345/22" />
+                    </div>
+                </div>
 
-          <p class="section-label">Identity</p>
-          <div class="form-grid">
-            <div class="form-field full">
-              <label>Full Name</label>
-              <input id="e-name" type="text" placeholder="e.g. Quiet Storm of Energy House" />
-            </div>
-            <div class="form-field">
-              <label>Sex</label>
-              <select id="e-sex">
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>Registration No.</label>
-              <input id="e-reg" type="text" placeholder="e.g. JR 12345/23" />
-            </div>
-          </div>
+                <p class="section-label">Pedigree</p>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Sire (Father)</label>
+                        <div class="parent-search-wrap">
+                            <input id="e-sire-search" type="text" value="${sireName}"
+                                placeholder="Search by name..." oninput="searchParent('sire', this.value)" autocomplete="off" />
+                            <button class="parent-clear" onclick="clearParent('sire')" title="Clear">×</button>
+                            <div class="parent-dropdown" id="sire-dropdown"></div>
+                        </div>
+                        <input type="hidden" id="e-sire-id" value="${d.sire || ''}" />
+                    </div>
+                    <div class="form-field">
+                        <label>Dam (Mother)</label>
+                        <div class="parent-search-wrap">
+                            <input id="e-dam-search" type="text" value="${damName}"
+                                placeholder="Search by name..." oninput="searchParent('dam', this.value)" autocomplete="off" />
+                            <button class="parent-clear" onclick="clearParent('dam')" title="Clear">×</button>
+                            <div class="parent-dropdown" id="dam-dropdown"></div>
+                        </div>
+                        <input type="hidden" id="e-dam-id" value="${d.dam || ''}" />
+                    </div>
+                </div>
 
-          <p class="section-label">Pedigree</p>
-          <div class="form-grid">
-            <div class="form-field">
-              <label>Sire (Father)</label>
-              <div class="parent-search-wrap">
-                <input id="e-sire-search" type="text" placeholder="Search by name..."
-                  oninput="searchParent('sire', this.value)" autocomplete="off" />
-                <button class="parent-clear" onclick="clearParent('sire')">×</button>
-                <div class="parent-dropdown" id="sire-dropdown"></div>
-              </div>
-              <input type="hidden" id="e-sire-id" value="" />
-            </div>
-            <div class="form-field">
-              <label>Dam (Mother)</label>
-              <div class="parent-search-wrap">
-                <input id="e-dam-search" type="text" placeholder="Search by name..."
-                  oninput="searchParent('dam', this.value)" autocomplete="off" />
-                <button class="parent-clear" onclick="clearParent('dam')">×</button>
-                <div class="parent-dropdown" id="dam-dropdown"></div>
-              </div>
-              <input type="hidden" id="e-dam-id" value="" />
-            </div>
-          </div>
+                <p class="section-label">Details</p>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Date of Birth</label>
+                        <input id="e-dob" type="text" value="${d.dob || ''}" placeholder="e.g. 15.03.2022" />
+                    </div>
+                    <div class="form-field">
+                        <label>Color</label>
+                        <input id="e-color" type="text" value="${d.color || ''}" placeholder="e.g. Blue & White" />
+                    </div>
+                    <div class="form-field">
+                        <label>Titles</label>
+                        <input id="e-titles" type="text" value="${d.titles || ''}" placeholder="e.g. CH, JCH" />
+                    </div>
+                    <div class="form-field full">
+                        <label>Photo URL</label>
+                        <input id="e-photo" type="text" value="${d.photo || ''}" placeholder="e.g. images/paint-it-black.jpg" />
+                    </div>
+                    <div class="form-field full">
+                        <label>Bio</label>
+                        <textarea id="e-bio" rows="4" style="padding: 11px 13px; border: 1px solid var(--border); background: white; font-family: 'Jost', sans-serif; font-size: 0.82rem; color: var(--dark); outline: none; width: 100%; resize: vertical;">${d.bio || ''}</textarea>
+                    </div>
+                </div>
 
-          <p class="section-label">Details</p>
-          <div class="form-grid">
-            <div class="form-field">
-              <label>Date of Birth</label>
-              <input id="e-dob" type="text" placeholder="e.g. 15.03.2023" />
-            </div>
-            <div class="form-field">
-              <label>Color</label>
-              <input id="e-color" type="text" placeholder="e.g. Fawn" />
-            </div>
-            <div class="form-field">
-              <label>Titles</label>
-              <input id="e-titles" type="text" placeholder="e.g. JCH" />
-            </div>
-            <div class="form-field full">
-              <label>Photo URL</label>
-              <input id="e-photo" type="text" placeholder="e.g. images/quiet-storm.jpg" />
-            </div>
-            <div class="form-field full">
-              <label>Bio</label>
-              <textarea id="e-bio" rows="4" style="padding:11px 13px;border:1px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:0.82rem;color:var(--dark);outline:none;width:100%;resize:vertical;"></textarea>
-            </div>
-          </div>
+                <p class="section-label">Visibility</p>
+                <div class="form-grid">
+                    ${makeToggle('e-show', !!d.show,
+                        'Show on Dogs page',
+                        'Appears in the public dogs grid and can be browsed by visitors'
+                    )}
+                    ${makeToggle('e-featured', !!d.featured,
+                        'Feature on Homepage',
+                        'Shown in the Featured Dogs section on the front page (max 3)'
+                    )}
+                </div>
 
-          <p class="section-label">Visibility</p>
-          <div class="form-grid">
-            ${makeToggle('e-show', false,
-              'Show on Dogs page',
-              'Appears in the public dogs grid and can be browsed by visitors'
-            )}
-            ${makeToggle('e-featured', false,
-              'Feature on Homepage',
-              'Shown in the Featured Dogs section on the front page (max 3)'
-            )}
-          </div>
+                <div class="form-actions">
+                    <button class="save-btn" id="save-btn" onclick="saveDog('${id}')">Save</button>
+                    <span class="save-ok" id="save-ok">Saved ✓</span>
+                    <button class="delete-btn" onclick="deleteDog('${id}')">Delete Dog</button>
+                </div>`;
+        }
 
-          <div class="form-actions">
-            <button class="save-btn" onclick="saveNewDog()">Add Dog</button>
-            <span class="save-ok" id="save-ok"></span>
-          </div>
-        `;
-      };
 
-      // ── Save new dog ──────────────────────────────────────────────
-      window.saveNewDog = async () => {
-        const name = document.getElementById('e-name').value.trim();
-        if (!name) { alert('Please enter a name.'); return; }
+        // ── Dogs — parent search ──────────────────────────────────────────────
 
-        const existingIds = Object.keys(allDogs).map(Number);
-        const newId = String(Math.max(...existingIds, 200) + 1);
+        window.searchParent = (field, query) => {
+            const dropdown = document.getElementById(`${field}-dropdown`);
+            if (!query || query.length < 2) { dropdown.style.display = 'none'; return; }
 
-        const sireId = document.getElementById('e-sire-id').value;
-        const damId  = document.getElementById('e-dam-id').value;
+            const q       = query.toLowerCase();
+            const matches = Object.entries(allDogs)
+                .filter(([, d]) => d.name?.toLowerCase().includes(q))
+                .slice(0, 12);
 
-        const data = {
-          name,
-          sex:      document.getElementById('e-sex').value,
-          sire:     sireId ? Number(sireId) : null,
-          dam:      damId  ? Number(damId)  : null,
-          dob:      document.getElementById('e-dob').value.trim(),
-          color:    document.getElementById('e-color').value.trim(),
-          titles:   document.getElementById('e-titles').value.trim(),
-          photo:    document.getElementById('e-photo').value.trim(),
-          bio: document.getElementById('e-bio').value.trim(),
-          reg:      document.getElementById('e-reg').value.trim(),
-          show:     document.getElementById('e-show').checked,
-          featured: document.getElementById('e-featured').checked,
+            if (!matches.length) { dropdown.style.display = 'none'; return; }
+
+            dropdown.innerHTML = matches.map(([id, d]) =>
+                `<div class="parent-dropdown-item" onclick="selectParent('${field}', '${id}', '${d.name?.replace(/'/g, "\\'")}')">
+                    ${d.name} <span class="pid">#${id}</span>
+                </div>`
+            ).join('');
+
+            dropdown.style.display = 'block';
         };
 
-        await setDoc(doc(db, 'dogs', newId), data);
-        allDogs[newId] = data;
-        renderList(document.getElementById('search-input').value);
-        selectDog(newId);
-      };
-
-      // ── Tab switching ─────────────────────────────────────────────
-      window.switchTab = (tab) => {
-        document.getElementById('dogs-panel').style.display    = tab === 'dogs'    ? 'grid' : 'none';
-        document.getElementById('journal-panel').style.display = tab === 'journal' ? 'grid' : 'none';
-        document.getElementById('tab-dogs').classList.toggle('active',    tab === 'dogs');
-        document.getElementById('tab-journal').classList.toggle('active', tab === 'journal');
-        if (tab === 'journal' && !journalLoaded) loadAllEntries();
-      };
-
-      // ── Journal state ─────────────────────────────────────────────
-      let allEntries   = {};
-      let currentEntry = null;
-      let journalLoaded = false;
-
-      // ── Load all entries ──────────────────────────────────────────
-      async function loadAllEntries() {
-        const snap = await getDocs(collection(db, 'articles'));
-        allEntries = {};
-        snap.forEach(d => { allEntries[d.id] = d.data(); });
-        journalLoaded = true;
-        renderJournalList();
-      }
-
-      // ── Journal sidebar list ──────────────────────────────────────
-      function renderJournalList(filter = '') {
-        const list = document.getElementById('journal-list');
-        const q    = filter.toLowerCase();
-        const entries = Object.keys(allEntries)
-          .filter(id => !q || allEntries[id].title?.toLowerCase().includes(q))
-          .sort((a, b) => (allEntries[b].date || '').localeCompare(allEntries[a].date || ''));
-
-        if (!entries.length) { list.innerHTML = '<div class="loading">No entries found</div>'; return; }
-
-        list.innerHTML = entries.map(id => {
-          const e = allEntries[id];
-          return `<div class="dog-item${currentEntry===id?' active':''}" id="jli-${id}" onclick="selectEntry('${id}')">
-            <div>
-              <div class="dog-item-name">${e.title || 'Untitled'}</div>
-              <div class="dog-item-meta">${e.date || 'No date'} · ${e.published ? 'Published' : 'Draft'}</div>
-            </div>
-            ${e.published ? '<div class="dog-item-dot"></div>' : ''}
-          </div>`;
-        }).join('');
-      }
-
-      window.filterJournal = () => renderJournalList(document.getElementById('journal-search').value);
-
-      // ── Select entry ──────────────────────────────────────────────
-      window.selectEntry = (id) => {
-        currentEntry = id;
-        document.querySelectorAll('#journal-list .dog-item').forEach(el => el.classList.remove('active'));
-        document.getElementById(`jli-${id}`)?.classList.add('active');
-        renderEntryPanel(id);
-      };
-
-      // ── Entry edit panel ──────────────────────────────────────────
-      function renderEntryPanel(id) {
-        const e = allEntries[id] || {};
-        document.getElementById('journal-edit-panel').innerHTML = `
-          <h2>${e.title || 'Untitled'}</h2>
-          <p class="edit-meta">ID #${id}</p>
-
-          <p class="section-label">Content</p>
-          <div class="form-grid">
-            <div class="form-field full">
-              <label>Title</label>
-              <input id="je-title" type="text" value="${e.title || ''}" placeholder="e.g. The Perfect French Bulldog Structure" />
-            </div>
-            <div class="form-field full">
-              <label>Intro (shown on Journal listing page)</label>
-              <textarea id="je-intro" rows="3" style="padding:11px 13px;border:1px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:0.82rem;color:var(--dark);outline:none;width:100%;resize:vertical;">${e.intro || ''}</textarea>
-            </div>
-            <div class="form-field full">
-              <label>Body (separate paragraphs with a blank line)</label>
-              <textarea id="je-body" rows="16" style="padding:11px 13px;border:1px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:0.82rem;color:var(--dark);outline:none;width:100%;resize:vertical;line-height:1.8;">${e.body || ''}</textarea>
-            </div>
-          </div>
-
-          <p class="section-label">Details</p>
-          <div class="form-grid">
-            <div class="form-field">
-              <label>Date</label>
-              <input id="je-date" type="text" value="${e.date || ''}" placeholder="e.g. 07.04.2025" />
-            </div>
-            <div class="form-field">
-              <label>Cover Photo URL</label>
-              <input id="je-photo" type="text" value="${e.photo || ''}" placeholder="e.g. images/article-cover.jpg" />
-            </div>
-          </div>
-
-          <p class="section-label">Visibility</p>
-          <div class="form-grid">
-            ${makeToggle('je-published', !!e.published,
-              'Published',
-              'Visible on the public Journal page'
-            )}
-          </div>
-
-          <div class="form-actions">
-            <button class="save-btn" id="je-save-btn" onclick="saveEntry('${id}')">Save</button>
-            <span class="save-ok" id="je-save-ok">Saved ✓</span>
-            <button class="delete-btn" onclick="deleteEntry('${id}')">Delete Entry</button>
-          </div>`;
-      }
-
-      // ── Save entry ────────────────────────────────────────────────
-      window.saveEntry = async (id) => {
-        const btn = document.getElementById('je-save-btn');
-        btn.disabled = true; btn.textContent = 'Saving...';
-
-        const data = {
-          title:     document.getElementById('je-title').value.trim(),
-          intro:     document.getElementById('je-intro').value.trim(),
-          body:      document.getElementById('je-body').value.trim(),
-          date:      document.getElementById('je-date').value.trim(),
-          photo:     document.getElementById('je-photo').value.trim(),
-          published: document.getElementById('je-published').checked,
+        window.selectParent = (field, id, name) => {
+            document.getElementById(`e-${field}-search`).value = name;
+            document.getElementById(`e-${field}-id`).value    = id;
+            document.getElementById(`${field}-dropdown`).style.display = 'none';
         };
 
-        await setDoc(doc(db, 'articles', String(id)), data);
-        allEntries[id] = data;
-
-        btn.disabled = false; btn.textContent = 'Save';
-        const ok = document.getElementById('je-save-ok');
-        ok.style.display = 'block';
-        setTimeout(() => ok.style.display = 'none', 2500);
-
-        renderJournalList(document.getElementById('journal-search').value);
-        document.getElementById(`jli-${id}`)?.classList.add('active');
-        document.querySelector('#journal-edit-panel h2').textContent = data.title;
-      };
-
-      // ── Delete entry ──────────────────────────────────────────────
-      window.deleteEntry = async (id) => {
-        const title = allEntries[id]?.title || 'this entry';
-        if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
-        await deleteDoc(doc(db, 'articles', String(id)));
-        delete allEntries[id];
-        currentEntry = null;
-        document.getElementById('journal-edit-panel').innerHTML = '<div class="edit-empty">Entry deleted</div>';
-        renderJournalList(document.getElementById('journal-search').value);
-      };
-
-      // ── New entry ─────────────────────────────────────────────────
-      window.showNewEntry = () => {
-        currentEntry = null;
-        document.querySelectorAll('#journal-list .dog-item').forEach(el => el.classList.remove('active'));
-        document.getElementById('journal-edit-panel').innerHTML = `
-          <h2>New Entry</h2>
-          <p class="edit-meta">Will be assigned a new ID automatically</p>
-
-          <p class="section-label">Content</p>
-          <div class="form-grid">
-            <div class="form-field full">
-              <label>Title</label>
-              <input id="je-title" type="text" placeholder="e.g. The Perfect French Bulldog Structure" />
-            </div>
-            <div class="form-field full">
-              <label>Intro (shown on Journal listing page)</label>
-              <textarea id="je-intro" rows="3" style="padding:11px 13px;border:1px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:0.82rem;color:var(--dark);outline:none;width:100%;resize:vertical;"></textarea>
-            </div>
-            <div class="form-field full">
-              <label>Body (separate paragraphs with a blank line)</label>
-              <textarea id="je-body" rows="16" style="padding:11px 13px;border:1px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:0.82rem;color:var(--dark);outline:none;width:100%;resize:vertical;line-height:1.8;"></textarea>
-            </div>
-          </div>
-
-          <p class="section-label">Details</p>
-          <div class="form-grid">
-            <div class="form-field">
-              <label>Date</label>
-              <input id="je-date" type="text" placeholder="e.g. 07.04.2025" />
-            </div>
-            <div class="form-field">
-              <label>Cover Photo URL</label>
-              <input id="je-photo" type="text" placeholder="e.g. images/article-cover.jpg" />
-            </div>
-          </div>
-
-          <p class="section-label">Visibility</p>
-          <div class="form-grid">
-            ${makeToggle('je-published', false,
-              'Published',
-              'Visible on the public Journal page'
-            )}
-          </div>
-
-          <div class="form-actions">
-            <button class="save-btn" onclick="saveNewEntry()">Add Entry</button>
-            <span class="save-ok" id="je-save-ok"></span>
-          </div>`;
-      };
-
-      // ── Save new entry ────────────────────────────────────────────
-      window.saveNewEntry = async () => {
-        const title = document.getElementById('je-title').value.trim();
-        if (!title) { alert('Please enter a title.'); return; }
-
-        const existingIds = Object.keys(allEntries).map(Number);
-        const newId = String(Math.max(...existingIds, 0) + 1);
-
-        const data = {
-          title,
-          intro:     document.getElementById('je-intro').value.trim(),
-          body:      document.getElementById('je-body').value.trim(),
-          date:      document.getElementById('je-date').value.trim(),
-          photo:     document.getElementById('je-photo').value.trim(),
-          published: document.getElementById('je-published').checked,
+        window.clearParent = (field) => {
+            document.getElementById(`e-${field}-search`).value = '';
+            document.getElementById(`e-${field}-id`).value    = '';
+            document.getElementById(`${field}-dropdown`).style.display = 'none';
         };
 
-        await setDoc(doc(db, 'articles', newId), data);
-        allEntries[newId] = data;
-        renderJournalList(document.getElementById('journal-search').value);
-        selectEntry(newId);
-      };
+        // Close dropdowns when clicking anywhere outside a parent search wrap
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.parent-search-wrap')) {
+                document.querySelectorAll('.parent-dropdown').forEach(d => d.style.display = 'none');
+            }
+        });
+
+
+        // ── Dogs — save / delete / new ────────────────────────────────────────
+
+        window.saveDog = async (id) => {
+            const btn = document.getElementById('save-btn');
+            btn.disabled    = true;
+            btn.textContent = 'Saving...';
+
+            const sireId = document.getElementById('e-sire-id').value;
+            const damId  = document.getElementById('e-dam-id').value;
+
+            const data = {
+                name:     document.getElementById('e-name').value.trim(),
+                sex:      document.getElementById('e-sex').value,
+                sire:     sireId ? Number(sireId) : null,
+                dam:      damId  ? Number(damId)  : null,
+                dob:      document.getElementById('e-dob').value.trim(),
+                color:    document.getElementById('e-color').value.trim(),
+                titles:   document.getElementById('e-titles').value.trim(),
+                photo:    document.getElementById('e-photo').value.trim(),
+                bio:      document.getElementById('e-bio').value.trim(),
+                reg:      document.getElementById('e-reg').value.trim(),
+                show:     document.getElementById('e-show').checked,
+                featured: document.getElementById('e-featured').checked,
+            };
+
+            await setDoc(doc(db, 'dogs', String(id)), data);
+            allDogs[id] = data;
+
+            btn.disabled    = false;
+            btn.textContent = 'Save';
+
+            const ok = document.getElementById('save-ok');
+            ok.style.display = 'block';
+            setTimeout(() => ok.style.display = 'none', 2500);
+
+            renderList(document.getElementById('search-input').value);
+            document.getElementById(`li-${id}`)?.classList.add('active');
+            document.querySelector('#edit-panel h2').textContent = data.name;
+        };
+
+        window.deleteDog = async (id) => {
+            const name = allDogs[id]?.name || `Dog #${id}`;
+            if (!confirm(`Delete "${name}" from the database? This cannot be undone.`)) return;
+            await deleteDoc(doc(db, 'dogs', String(id)));
+            delete allDogs[id];
+            currentId = null;
+            document.getElementById('edit-panel').innerHTML = '<div class="edit-empty">Dog deleted</div>';
+            renderList(document.getElementById('search-input').value);
+        };
+
+        window.showNewDog = () => {
+            currentId = null;
+            document.querySelectorAll('.dog-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('edit-panel').innerHTML = `
+                <h2>New Dog</h2>
+                <p class="edit-meta">Will be assigned a new ID automatically</p>
+
+                <p class="section-label">Identity</p>
+                <div class="form-grid">
+                    <div class="form-field full">
+                        <label>Full Name</label>
+                        <input id="e-name" type="text" placeholder="e.g. Quiet Storm of Energy House" />
+                    </div>
+                    <div class="form-field">
+                        <label>Sex</label>
+                        <select id="e-sex">
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Registration No.</label>
+                        <input id="e-reg" type="text" placeholder="e.g. JR 12345/23" />
+                    </div>
+                </div>
+
+                <p class="section-label">Pedigree</p>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Sire (Father)</label>
+                        <div class="parent-search-wrap">
+                            <input id="e-sire-search" type="text" placeholder="Search by name..."
+                                oninput="searchParent('sire', this.value)" autocomplete="off" />
+                            <button class="parent-clear" onclick="clearParent('sire')">×</button>
+                            <div class="parent-dropdown" id="sire-dropdown"></div>
+                        </div>
+                        <input type="hidden" id="e-sire-id" value="" />
+                    </div>
+                    <div class="form-field">
+                        <label>Dam (Mother)</label>
+                        <div class="parent-search-wrap">
+                            <input id="e-dam-search" type="text" placeholder="Search by name..."
+                                oninput="searchParent('dam', this.value)" autocomplete="off" />
+                            <button class="parent-clear" onclick="clearParent('dam')">×</button>
+                            <div class="parent-dropdown" id="dam-dropdown"></div>
+                        </div>
+                        <input type="hidden" id="e-dam-id" value="" />
+                    </div>
+                </div>
+
+                <p class="section-label">Details</p>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Date of Birth</label>
+                        <input id="e-dob" type="text" placeholder="e.g. 15.03.2023" />
+                    </div>
+                    <div class="form-field">
+                        <label>Color</label>
+                        <input id="e-color" type="text" placeholder="e.g. Fawn" />
+                    </div>
+                    <div class="form-field">
+                        <label>Titles</label>
+                        <input id="e-titles" type="text" placeholder="e.g. JCH" />
+                    </div>
+                    <div class="form-field full">
+                        <label>Photo URL</label>
+                        <input id="e-photo" type="text" placeholder="e.g. images/quiet-storm.jpg" />
+                    </div>
+                    <div class="form-field full">
+                        <label>Bio</label>
+                        <textarea id="e-bio" rows="4" style="padding: 11px 13px; border: 1px solid var(--border); background: white; font-family: 'Jost', sans-serif; font-size: 0.82rem; color: var(--dark); outline: none; width: 100%; resize: vertical;"></textarea>
+                    </div>
+                </div>
+
+                <p class="section-label">Visibility</p>
+                <div class="form-grid">
+                    ${makeToggle('e-show', false,
+                        'Show on Dogs page',
+                        'Appears in the public dogs grid and can be browsed by visitors'
+                    )}
+                    ${makeToggle('e-featured', false,
+                        'Feature on Homepage',
+                        'Shown in the Featured Dogs section on the front page (max 3)'
+                    )}
+                </div>
+
+                <div class="form-actions">
+                    <button class="save-btn" onclick="saveNewDog()">Add Dog</button>
+                    <span class="save-ok" id="save-ok"></span>
+                </div>`;
+        };
+
+        window.saveNewDog = async () => {
+            const name = document.getElementById('e-name').value.trim();
+            if (!name) { alert('Please enter a name.'); return; }
+
+            const existingIds = Object.keys(allDogs).map(Number);
+            const newId       = String(Math.max(...existingIds, 200) + 1);
+            const sireId      = document.getElementById('e-sire-id').value;
+            const damId       = document.getElementById('e-dam-id').value;
+
+            const data = {
+                name,
+                sex:      document.getElementById('e-sex').value,
+                sire:     sireId ? Number(sireId) : null,
+                dam:      damId  ? Number(damId)  : null,
+                dob:      document.getElementById('e-dob').value.trim(),
+                color:    document.getElementById('e-color').value.trim(),
+                titles:   document.getElementById('e-titles').value.trim(),
+                photo:    document.getElementById('e-photo').value.trim(),
+                bio:      document.getElementById('e-bio').value.trim(),
+                reg:      document.getElementById('e-reg').value.trim(),
+                show:     document.getElementById('e-show').checked,
+                featured: document.getElementById('e-featured').checked,
+            };
+
+            await setDoc(doc(db, 'dogs', newId), data);
+            allDogs[newId] = data;
+            renderList(document.getElementById('search-input').value);
+            selectDog(newId);
+        };
+
+
+        // ── Journal — load & render list ──────────────────────────────────────
+
+        async function loadAllEntries() {
+            const snap = await getDocs(collection(db, 'articles'));
+            allEntries = {};
+            snap.forEach(d => { allEntries[d.id] = d.data(); });
+            journalLoaded = true;
+            renderJournalList();
+        }
+
+        function renderJournalList(filter = '') {
+            const list    = document.getElementById('journal-list');
+            const q       = filter.toLowerCase();
+            const entries = Object.keys(allEntries)
+                .filter(id => !q || allEntries[id].title?.toLowerCase().includes(q))
+                .sort((a, b) => (allEntries[b].date || '').localeCompare(allEntries[a].date || ''));
+
+            if (!entries.length) { list.innerHTML = '<div class="loading">No entries found</div>'; return; }
+
+            list.innerHTML = entries.map(id => {
+                const e = allEntries[id];
+                return `
+                    <div class="dog-item${currentEntry === id ? ' active' : ''}" id="jli-${id}" onclick="selectEntry('${id}')">
+                        <div>
+                            <div class="dog-item-name">${e.title || 'Untitled'}</div>
+                            <div class="dog-item-meta">${e.date || 'No date'} · ${e.published ? 'Published' : 'Draft'}</div>
+                        </div>
+                        ${e.published ? '<div class="dog-item-dot"></div>' : ''}
+                    </div>`;
+            }).join('');
+        }
+
+        window.filterJournal = () => renderJournalList(document.getElementById('journal-search').value);
+
+        window.selectEntry = (id) => {
+            currentEntry = id;
+            document.querySelectorAll('#journal-list .dog-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`jli-${id}`)?.classList.add('active');
+            renderEntryPanel(id);
+        };
+
+
+        // ── Journal — entry edit panel ────────────────────────────────────────
+
+        function renderEntryPanel(id) {
+            const e = allEntries[id] || {};
+            document.getElementById('journal-edit-panel').innerHTML = `
+                <h2>${e.title || 'Untitled'}</h2>
+                <p class="edit-meta">ID #${id}</p>
+
+                <p class="section-label">Content</p>
+                <div class="form-grid">
+                    <div class="form-field full">
+                        <label>Title</label>
+                        <input id="je-title" type="text" value="${e.title || ''}" placeholder="e.g. The Perfect French Bulldog Structure" />
+                    </div>
+                    <div class="form-field full">
+                        <label>Intro (shown on Journal listing page)</label>
+                        <textarea id="je-intro" rows="3" style="padding: 11px 13px; border: 1px solid var(--border); background: white; font-family: 'Jost', sans-serif; font-size: 0.82rem; color: var(--dark); outline: none; width: 100%; resize: vertical;">${e.intro || ''}</textarea>
+                    </div>
+                    <div class="form-field full">
+                        <label>Body (separate paragraphs with a blank line)</label>
+                        <textarea id="je-body" rows="16" style="padding: 11px 13px; border: 1px solid var(--border); background: white; font-family: 'Jost', sans-serif; font-size: 0.82rem; color: var(--dark); outline: none; width: 100%; resize: vertical; line-height: 1.8;">${e.body || ''}</textarea>
+                    </div>
+                </div>
+
+                <p class="section-label">Details</p>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Date</label>
+                        <input id="je-date" type="text" value="${e.date || ''}" placeholder="e.g. 07.04.2025" />
+                    </div>
+                    <div class="form-field">
+                        <label>Cover Photo URL</label>
+                        <input id="je-photo" type="text" value="${e.photo || ''}" placeholder="e.g. images/article-cover.jpg" />
+                    </div>
+                </div>
+
+                <p class="section-label">Visibility</p>
+                <div class="form-grid">
+                    ${makeToggle('je-published', !!e.published,
+                        'Published',
+                        'Visible on the public Journal page'
+                    )}
+                </div>
+
+                <div class="form-actions">
+                    <button class="save-btn" id="je-save-btn" onclick="saveEntry('${id}')">Save</button>
+                    <span class="save-ok" id="je-save-ok">Saved ✓</span>
+                    <button class="delete-btn" onclick="deleteEntry('${id}')">Delete Entry</button>
+                </div>`;
+        }
+
+
+        // ── Journal — save / delete / new ─────────────────────────────────────
+
+        window.saveEntry = async (id) => {
+            const btn = document.getElementById('je-save-btn');
+            btn.disabled    = true;
+            btn.textContent = 'Saving...';
+
+            const data = {
+                title:     document.getElementById('je-title').value.trim(),
+                intro:     document.getElementById('je-intro').value.trim(),
+                body:      document.getElementById('je-body').value.trim(),
+                date:      document.getElementById('je-date').value.trim(),
+                photo:     document.getElementById('je-photo').value.trim(),
+                published: document.getElementById('je-published').checked,
+            };
+
+            await setDoc(doc(db, 'articles', String(id)), data);
+            allEntries[id] = data;
+
+            btn.disabled    = false;
+            btn.textContent = 'Save';
+
+            const ok = document.getElementById('je-save-ok');
+            ok.style.display = 'block';
+            setTimeout(() => ok.style.display = 'none', 2500);
+
+            renderJournalList(document.getElementById('journal-search').value);
+            document.getElementById(`jli-${id}`)?.classList.add('active');
+            document.querySelector('#journal-edit-panel h2').textContent = data.title;
+        };
+
+        window.deleteEntry = async (id) => {
+            const title = allEntries[id]?.title || 'this entry';
+            if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+            await deleteDoc(doc(db, 'articles', String(id)));
+            delete allEntries[id];
+            currentEntry = null;
+            document.getElementById('journal-edit-panel').innerHTML = '<div class="edit-empty">Entry deleted</div>';
+            renderJournalList(document.getElementById('journal-search').value);
+        };
+
+        window.showNewEntry = () => {
+            currentEntry = null;
+            document.querySelectorAll('#journal-list .dog-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('journal-edit-panel').innerHTML = `
+                <h2>New Entry</h2>
+                <p class="edit-meta">Will be assigned a new ID automatically</p>
+
+                <p class="section-label">Content</p>
+                <div class="form-grid">
+                    <div class="form-field full">
+                        <label>Title</label>
+                        <input id="je-title" type="text" placeholder="e.g. The Perfect French Bulldog Structure" />
+                    </div>
+                    <div class="form-field full">
+                        <label>Intro (shown on Journal listing page)</label>
+                        <textarea id="je-intro" rows="3" style="padding: 11px 13px; border: 1px solid var(--border); background: white; font-family: 'Jost', sans-serif; font-size: 0.82rem; color: var(--dark); outline: none; width: 100%; resize: vertical;"></textarea>
+                    </div>
+                    <div class="form-field full">
+                        <label>Body (separate paragraphs with a blank line)</label>
+                        <textarea id="je-body" rows="16" style="padding: 11px 13px; border: 1px solid var(--border); background: white; font-family: 'Jost', sans-serif; font-size: 0.82rem; color: var(--dark); outline: none; width: 100%; resize: vertical; line-height: 1.8;"></textarea>
+                    </div>
+                </div>
+
+                <p class="section-label">Details</p>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Date</label>
+                        <input id="je-date" type="text" placeholder="e.g. 07.04.2025" />
+                    </div>
+                    <div class="form-field">
+                        <label>Cover Photo URL</label>
+                        <input id="je-photo" type="text" placeholder="e.g. images/article-cover.jpg" />
+                    </div>
+                </div>
+
+                <p class="section-label">Visibility</p>
+                <div class="form-grid">
+                    ${makeToggle('je-published', false,
+                        'Published',
+                        'Visible on the public Journal page'
+                    )}
+                </div>
+
+                <div class="form-actions">
+                    <button class="save-btn" onclick="saveNewEntry()">Add Entry</button>
+                    <span class="save-ok" id="je-save-ok"></span>
+                </div>`;
+        };
+
+        window.saveNewEntry = async () => {
+            const title = document.getElementById('je-title').value.trim();
+            if (!title) { alert('Please enter a title.'); return; }
+
+            const existingIds = Object.keys(allEntries).map(Number);
+            const newId       = String(Math.max(...existingIds, 0) + 1);
+
+            const data = {
+                title,
+                intro:     document.getElementById('je-intro').value.trim(),
+                body:      document.getElementById('je-body').value.trim(),
+                date:      document.getElementById('je-date').value.trim(),
+                photo:     document.getElementById('je-photo').value.trim(),
+                published: document.getElementById('je-published').checked,
+            };
+
+            await setDoc(doc(db, 'articles', newId), data);
+            allEntries[newId] = data;
+            renderJournalList(document.getElementById('journal-search').value);
+            selectEntry(newId);
+        };
 
     </script>
-  </body>
+</body>
 </html>
